@@ -81,4 +81,682 @@ button:disabled{
   color:#555;
 }
 
-#stage
+#stage{
+  position:relative;
+  display:none;
+  width:100%;
+  overflow:hidden;
+  border-radius:12px;
+  background:#111;
+}
+
+#photo{
+  display:block;
+  width:100%;
+  height:auto;
+}
+
+#overlay{
+  position:absolute;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+}
+
+.note{
+  font-size:13px;
+  color:#666;
+  line-height:1.6;
+}
+
+input{
+  display:none;
+}
+
+.ok{
+  color:#16803c !important;
+}
+
+.error{
+  color:#c62828 !important;
+}
+</style>
+</head>
+
+
+<body>
+
+<div class="wrap">
+
+  <div class="card">
+
+    <h1>AI人物自动骨架标注 V1.2</h1>
+
+    <div class="sub">
+      单人照片 · Google MediaPipe Pose Landmarker
+    </div>
+
+    <div class="row">
+
+      <label class="primary" for="file">
+        选择人物照片
+      </label>
+
+      <button
+        id="toggle"
+        type="button"
+        disabled>
+        隐藏骨架
+      </button>
+
+    </div>
+
+    <input
+      id="file"
+      type="file"
+      accept="image/*">
+
+    <div id="status">
+      正在初始化…
+    </div>
+
+  </div>
+
+
+  <div class="card">
+
+    <div id="stage">
+
+      <img
+        id="photo"
+        alt="人物照片">
+
+      <canvas
+        id="overlay">
+      </canvas>
+
+    </div>
+
+  </div>
+
+
+  <div class="card note">
+
+    V1.2 当前只负责：
+    <br>
+    ① 读取人物照片
+    <br>
+    ② Google MediaPipe Pose Landmarker 自动检测
+    <br>
+    ③ 将真实检测到的姿态骨架叠加到原图
+    <br>
+    <br>
+    未检测到人物时不会显示假骨架。
+    当前不进行人体尺寸、H/W/D、解剖点或QC判断。
+
+  </div>
+
+</div>
+
+
+<!--
+  Google MediaPipe 官方 Web Bundle
+-->
+<script
+  src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs"
+  crossorigin="anonymous">
+</script>
+
+
+<script>
+
+const WASM_URL =
+"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm";
+
+const MODEL_URL =
+"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+
+
+const statusEl =
+document.getElementById("status");
+
+const fileInput =
+document.getElementById("file");
+
+const photo =
+document.getElementById("photo");
+
+const canvas =
+document.getElementById("overlay");
+
+const stage =
+document.getElementById("stage");
+
+const toggle =
+document.getElementById("toggle");
+
+const ctx =
+canvas.getContext("2d");
+
+
+let landmarker = null;
+
+let results = null;
+
+let showSkeleton = true;
+
+let DrawingUtils = null;
+
+let PoseLandmarker = null;
+
+let FilesetResolver = null;
+
+
+
+function setStatus(text,type=""){
+
+  statusEl.textContent = text;
+
+  statusEl.className = type;
+
+}
+
+
+
+function timeout(ms){
+
+  return new Promise(function(_,reject){
+
+    setTimeout(function(){
+
+      reject(
+        new Error("加载超时")
+      );
+
+    },ms);
+
+  });
+
+}
+
+
+
+async function withTimeout(promise,ms){
+
+  return Promise.race([
+
+    promise,
+
+    timeout(ms)
+
+  ]);
+
+}
+
+
+
+/*
+  初始化 MediaPipe
+*/
+async function init(){
+
+  try{
+
+    setStatus(
+      "正在检查 MediaPipe…"
+    );
+
+
+    /*
+      vision_bundle.mjs
+      会把模块对象暴露给页面
+    */
+
+    if(
+      !window.PoseLandmarker ||
+      !window.FilesetResolver ||
+      !window.DrawingUtils
+    ){
+
+      throw new Error(
+        "MediaPipe 官方 Bundle 未成功加载"
+      );
+
+    }
+
+
+    PoseLandmarker =
+      window.PoseLandmarker;
+
+    FilesetResolver =
+      window.FilesetResolver;
+
+    DrawingUtils =
+      window.DrawingUtils;
+
+
+    setStatus(
+      "正在加载视觉运行组件…"
+    );
+
+
+    const vision =
+      await withTimeout(
+
+        FilesetResolver.forVisionTasks(
+          WASM_URL
+        ),
+
+        20000
+
+      );
+
+
+    setStatus(
+      "正在加载姿态模型…"
+    );
+
+
+    landmarker =
+      await withTimeout(
+
+        PoseLandmarker.createFromOptions(
+          vision,
+          {
+
+            baseOptions:{
+              modelAssetPath:
+                MODEL_URL
+            },
+
+            runningMode:
+              "IMAGE",
+
+            numPoses:
+              1,
+
+            minPoseDetectionConfidence:
+              0.5,
+
+            minPosePresenceConfidence:
+              0.5,
+
+            minTrackingConfidence:
+              0.5
+
+          }
+        ),
+
+        30000
+
+      );
+
+
+    setStatus(
+      "MediaPipe 已就绪，请上传人物照片。",
+      "ok"
+    );
+
+
+  }catch(error){
+
+    console.error(
+      "MediaPipe 初始化失败：",
+      error
+    );
+
+
+    setStatus(
+      "MediaPipe 加载失败：" +
+      (error.message || error) +
+      "。请刷新页面。",
+      "error"
+    );
+
+  }
+
+}
+
+
+
+/*
+  根据原始图片尺寸设置 Canvas
+*/
+function resizeCanvas(){
+
+  if(
+    !photo.naturalWidth ||
+    !photo.naturalHeight
+  ){
+
+    return;
+
+  }
+
+
+  canvas.width =
+    photo.naturalWidth;
+
+  canvas.height =
+    photo.naturalHeight;
+
+
+  const rect =
+    photo.getBoundingClientRect();
+
+
+  canvas.style.width =
+    rect.width + "px";
+
+  canvas.style.height =
+    rect.height + "px";
+
+}
+
+
+
+/*
+  绘制真实 MediaPipe 骨架
+*/
+function drawSkeleton(){
+
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+
+  if(
+    !results ||
+    !results.landmarks ||
+    !results.landmarks.length
+  ){
+
+    return;
+
+  }
+
+
+  if(!showSkeleton){
+
+    return;
+
+  }
+
+
+  const drawer =
+    new DrawingUtils(ctx);
+
+
+  for(
+    const landmarks
+    of results.landmarks
+  ){
+
+    drawer.drawConnectors(
+
+      landmarks,
+
+      PoseLandmarker.POSE_CONNECTIONS,
+
+      {
+        lineWidth:4
+      }
+
+    );
+
+
+    drawer.drawLandmarks(
+
+      landmarks,
+
+      {
+        radius:4,
+        lineWidth:2
+      }
+
+    );
+
+  }
+
+}
+
+
+
+/*
+  图片加载完成
+*/
+photo.addEventListener(
+  "load",
+  function(){
+
+    resizeCanvas();
+
+    drawSkeleton();
+
+  }
+);
+
+
+
+/*
+  上传照片
+*/
+fileInput.addEventListener(
+  "change",
+  async function(){
+
+    const file =
+      fileInput.files &&
+      fileInput.files[0];
+
+
+    if(!file){
+
+      return;
+
+    }
+
+
+    if(!landmarker){
+
+      setStatus(
+        "MediaPipe 尚未就绪，请等待“MediaPipe 已就绪”。",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    /*
+      清除上一张图的检测结果
+    */
+
+    results = null;
+
+    toggle.disabled = true;
+
+    showSkeleton = true;
+
+    stage.style.display =
+      "block";
+
+
+    setStatus(
+      "正在读取人物照片…"
+    );
+
+
+    const objectURL =
+      URL.createObjectURL(file);
+
+
+    photo.src =
+      objectURL;
+
+
+    await new Promise(
+      function(resolve){
+
+        if(photo.complete){
+
+          resolve();
+
+        }else{
+
+          photo.addEventListener(
+            "load",
+            resolve,
+            {
+              once:true
+            }
+          );
+
+        }
+
+      }
+    );
+
+
+    try{
+
+      resizeCanvas();
+
+
+      setStatus(
+        "正在检测人物…"
+      );
+
+
+      /*
+        关键：
+        直接使用 MediaPipe
+        PoseLandmarker.detect()
+      */
+
+      results =
+        landmarker.detect(photo);
+
+
+      if(
+        results &&
+        results.landmarks &&
+        results.landmarks.length
+      ){
+
+        toggle.disabled =
+          false;
+
+        toggle.textContent =
+          "隐藏骨架";
+
+
+        setStatus(
+          "检测成功：已显示真实 MediaPipe 骨架。",
+          "ok"
+        );
+
+
+      }else{
+
+        results = null;
+
+
+        setStatus(
+          "未检测到人物，没有显示假骨架。",
+          "error"
+        );
+
+      }
+
+
+      drawSkeleton();
+
+
+    }catch(error){
+
+      console.error(
+        "人物检测失败：",
+        error
+      );
+
+
+      results = null;
+
+
+      drawSkeleton();
+
+
+      setStatus(
+        "人物检测失败：" +
+        (error.message || error),
+        "error"
+      );
+
+    }
+
+  }
+);
+
+
+
+/*
+  显示 / 隐藏骨架
+*/
+toggle.addEventListener(
+  "click",
+  function(){
+
+    showSkeleton =
+      !showSkeleton;
+
+
+    toggle.textContent =
+      showSkeleton
+      ? "隐藏骨架"
+      : "显示骨架";
+
+
+    drawSkeleton();
+
+  }
+);
+
+
+
+/*
+  手机横竖屏变化
+*/
+window.addEventListener(
+  "resize",
+  function(){
+
+    if(
+      photo.naturalWidth
+    ){
+
+      resizeCanvas();
+
+      drawSkeleton();
+
+    }
+
+  }
+);
+
+
+/*
+  开始初始化
+*/
+init();
+
+</script>
+
+</body>
+</html>
