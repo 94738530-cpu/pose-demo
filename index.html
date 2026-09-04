@@ -1097,4 +1097,317 @@ function draw(){
     img.style.opacity=
       Number(
         $("photoOpacity").value
-      )
+      )/100;
+
+  }
+
+
+  drawSkeleton();
+
+
+  if(showPoints){
+    drawPoints();
+  }
+
+}
+
+
+/* =========================================================
+   尺寸
+========================================================= */
+
+function resizeCanvas(){
+
+  if(!W)return;
+
+  canvas.width=W;
+  canvas.height=H;
+
+  canvas.style.width=
+    img.clientWidth+"px";
+
+  canvas.style.height=
+    img.clientHeight+"px";
+
+  draw();
+
+}
+
+new ResizeObserver(
+  resizeCanvas
+).observe(img);
+
+
+/* =========================================================
+   图片
+========================================================= */
+
+$("file").onchange=e=>{
+
+  const file=e.target.files?.[0];
+
+  if(!file)return;
+
+
+  const url=
+    URL.createObjectURL(file);
+
+
+  img.onload=()=>{
+
+    W=img.naturalWidth;
+    H=img.naturalHeight;
+
+    stage.style.display=
+      "inline-block";
+
+    empty.style.display=
+      "none";
+
+
+    landmarks=null;
+
+    enableButtons(false);
+
+    $("detect").disabled=false;
+
+    displayMode="xr";
+
+    img.style.opacity=1;
+
+
+    ctx.clearRect(
+      0,0,W,H
+    );
+
+
+    setStatus(
+      `图片已载入：${W} × ${H}
+点击“开始检测”。`
+    );
+
+
+    URL.revokeObjectURL(url);
+
+    resizeCanvas();
+
+  };
+
+
+  img.src=url;
+
+};
+
+
+/* =========================================================
+   MediaPipe
+========================================================= */
+
+async function loadMediaPipe(){
+
+  setStatus(
+    `正在加载 MediaPipe…
+首次加载模型可能需要一点时间。`
+  );
+
+
+  const {
+    PoseLandmarker,
+    FilesetResolver
+  }=await import(
+    "https://unpkg.com/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs"
+  );
+
+
+  const vision=
+    await FilesetResolver.forVisionTasks(
+      "https://unpkg.com/@mediapipe/tasks-vision@0.10.21/wasm"
+    );
+
+
+  detector=
+    await PoseLandmarker.createFromOptions(
+      vision,
+      {
+
+        baseOptions:{
+          modelAssetPath:
+            "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
+        },
+
+        runningMode:"IMAGE",
+
+        numPoses:1,
+
+        minPoseDetectionConfidence:.5,
+
+        minPosePresenceConfidence:.5,
+
+        minTrackingConfidence:.5
+
+      }
+    );
+
+}
+
+
+/* =========================================================
+   检测
+========================================================= */
+
+$("detect").onclick=
+async()=>{
+
+  if(!W)return;
+
+  $("detect").disabled=true;
+
+
+  try{
+
+    if(!detector){
+      await loadMediaPipe();
+    }
+
+
+    const result=
+      detector.detect(img);
+
+
+    if(!result.landmarks?.length){
+
+      landmarks=null;
+
+      draw();
+
+      enableButtons(false);
+
+      $("detect").disabled=false;
+
+
+      setStatus(
+        `❌ 没有检测到人物。
+没有检测到人物就不画假骨架。`,
+        "bad"
+      );
+
+      return;
+
+    }
+
+
+    landmarks=
+      result.landmarks[0]
+      .map((p,i)=>({
+
+        x:p.x*W,
+        y:p.y*H,
+        z:p.z,
+        v:p.visibility??1,
+        i
+
+      }));
+
+
+    enableButtons(true);
+
+
+    setStatus(
+      `✅ 检测完成：1 人物 / 33 个姿态点
+
+V1.8 真实关节链已建立。
+
+重点检查：
+肩 → 肘 → 腕
+髋 → 膝 → 踝
+胸廓 → 脊柱 → 骨盆
+以及耻骨参考区域。`,
+      "ok"
+    );
+
+
+    draw();
+
+  }
+  catch(error){
+
+    console.error(error);
+
+    enableButtons(false);
+
+    $("detect").disabled=false;
+
+
+    setStatus(
+      "❌ MediaPipe 检测失败：\n"+
+      (error?.message||error),
+      "bad"
+    );
+
+  }
+  finally{
+
+    $("detect").disabled=false;
+
+  }
+
+};
+
+
+/* =========================================================
+   控件
+========================================================= */
+
+$("original").onclick=()=>{
+
+  displayMode="original";
+
+  $("photoOpacity").value=100;
+
+  draw();
+
+};
+
+
+$("xr").onclick=()=>{
+
+  displayMode="xr";
+
+  $("photoOpacity").value=55;
+
+  draw();
+
+};
+
+
+$("boneOnly").onclick=()=>{
+
+  displayMode="bone";
+
+  draw();
+
+};
+
+
+$("points").onclick=()=>{
+
+  showPoints=!showPoints;
+
+  $("points").textContent=
+    showPoints
+      ?"隐藏检测点"
+      :"检测点";
+
+  draw();
+
+};
+
+
+$("photoOpacity").oninput=draw;
+
+$("boneOpacity").oninput=draw;
+
+</script>
+
+</body>
+</html>
