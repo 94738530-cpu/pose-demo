@@ -10,7 +10,7 @@
   content="width=device-width, initial-scale=1.0"
 >
 
-<title>自动骨架标注 V1</title>
+<title>自动骨架标注 V1.1</title>
 
 <style>
 
@@ -73,22 +73,24 @@ h1{
 
 .controls{
   display:flex;
-  gap:10px;
+  gap:9px;
   flex-wrap:wrap;
-  margin-bottom:18px;
+  margin-bottom:14px;
 }
 
 button,
 .fileButton{
 
   border:0;
+
   border-radius:10px;
 
-  padding:12px 18px;
+  padding:11px 15px;
 
-  font-size:16px;
+  font-size:15px;
 
   background:#222;
+
   color:white;
 
   cursor:pointer;
@@ -96,17 +98,75 @@ button,
   display:inline-block;
 }
 
-button:disabled{
-  opacity:.45;
-}
-
 .fileButton{
   background:#1877f2;
+}
+
+button:disabled{
+  opacity:.45;
 }
 
 input[type="file"]{
   display:none;
 }
+
+
+/* =========================================
+   透视控制
+========================================= */
+
+.opacityPanel{
+
+  padding:14px;
+
+  margin-bottom:16px;
+
+  background:#f7f7f7;
+
+  border-radius:10px;
+
+}
+
+.opacityTitle{
+
+  font-size:15px;
+
+  margin-bottom:9px;
+
+}
+
+.opacityRow{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+}
+
+#opacitySlider{
+
+  flex:1;
+
+}
+
+#opacityValue{
+
+  width:48px;
+
+  text-align:right;
+
+  font-size:14px;
+
+  color:#555;
+
+}
+
+
+/* =========================================
+   图片查看区域
+========================================= */
 
 .viewer{
 
@@ -127,7 +187,15 @@ input[type="file"]{
   align-items:center;
 
   justify-content:center;
+
 }
+
+
+/*
+照片层
+
+opacity 会由 JavaScript 控制
+*/
 
 #photo{
 
@@ -138,20 +206,32 @@ input[type="file"]{
   height:auto;
 
   max-width:100%;
+
+  transition:opacity .15s ease;
+
 }
+
+
+/*
+Canvas 永远覆盖在照片上面
+*/
 
 #canvas{
 
   position:absolute;
 
   left:0;
+
   top:0;
 
   width:100%;
+
   height:100%;
 
   pointer-events:none;
+
 }
+
 
 .info{
 
@@ -173,6 +253,17 @@ input[type="file"]{
   display:none;
 }
 
+
+/*
+仅骨架模式的背景
+*/
+
+.skeletonOnly{
+
+  background:#151515;
+
+}
+
 </style>
 
 </head>
@@ -184,14 +275,14 @@ input[type="file"]{
 <div class="box">
 
 
-<h1>🦴 自动骨架标注 V1</h1>
+<h1>🦴 自动骨架标注 V1.1</h1>
 
 
 <div class="subtitle">
 
 真实 MediaPipe Pose Landmarker<br>
 
-上传一张人物照片，检测实际人体 33 个 Pose Landmark。
+支持：原图 + 骨架 / 透视骨架 / 仅骨架
 
 </div>
 
@@ -205,6 +296,10 @@ input[type="file"]{
 
 </div>
 
+
+<!-- ======================================
+     操作按钮
+====================================== -->
 
 <div class="controls">
 
@@ -227,11 +322,31 @@ input[type="file"]{
 
 
 <button
-  id="toggleButton"
+  id="normalButton"
   disabled
 >
 
-隐藏骨架
+📷 原图+骨架
+
+</button>
+
+
+<button
+  id="xrayButton"
+  disabled
+>
+
+👁️ 透视骨架
+
+</button>
+
+
+<button
+  id="skeletonButton"
+  disabled
+>
+
+🦴 仅骨架
 
 </button>
 
@@ -248,6 +363,50 @@ input[type="file"]{
 
 </div>
 
+
+<!-- ======================================
+     透视强度
+====================================== -->
+
+<div
+  id="opacityPanel"
+  class="opacityPanel hidden"
+>
+
+<div class="opacityTitle">
+
+👁️ 人物透视强度
+
+</div>
+
+
+<div class="opacityRow">
+
+
+<input
+  id="opacitySlider"
+  type="range"
+  min="0"
+  max="100"
+  value="35"
+>
+
+
+<div id="opacityValue">
+
+35%
+
+</div>
+
+
+</div>
+
+</div>
+
+
+<!-- ======================================
+     图片区域
+====================================== -->
 
 <div
   id="viewer"
@@ -285,17 +444,27 @@ input[type="file"]{
 
 /*
 ==================================================
-自动骨架标注 V1
+自动骨架标注 V1.1
 ==================================================
 
-核心原则：
+核心：
 
-1. 使用真实 MediaPipe Pose Landmarker
-2. 不使用固定坐标
-3. 不使用预设人体比例
-4. 不使用假骨架
-5. 单人物模式
-6. IMAGE 模式
+真实 MediaPipe Pose Landmarker
+
+不使用：
+
+❌ 固定人体坐标
+❌ 固定骨架
+❌ 人工推测骨架
+❌ 上一张照片的数据
+
+新增：
+
+① 原图 + 骨架
+② 透视骨架
+③ 仅骨架
+④ 透视强度控制
+
 ==================================================
 */
 
@@ -328,11 +497,26 @@ document.getElementById("status");
 const fileInput =
 document.getElementById("fileInput");
 
-const toggleButton =
-document.getElementById("toggleButton");
+const normalButton =
+document.getElementById("normalButton");
+
+const xrayButton =
+document.getElementById("xrayButton");
+
+const skeletonButton =
+document.getElementById("skeletonButton");
 
 const clearButton =
 document.getElementById("clearButton");
+
+const opacityPanel =
+document.getElementById("opacityPanel");
+
+const opacitySlider =
+document.getElementById("opacitySlider");
+
+const opacityValue =
+document.getElementById("opacityValue");
 
 const viewer =
 document.getElementById("viewer");
@@ -369,15 +553,39 @@ let poseLandmarker = null;
 
 let currentResults = null;
 
-let skeletonVisible = true;
-
 let currentImageURL = null;
+
+
+/*
+显示模式：
+
+normal
+xray
+skeleton
+
+*/
+
+let displayMode =
+"normal";
+
+
+/*
+透视模式照片透明度
+
+0 = 完全透明
+
+1 = 完全不透明
+
+*/
+
+let photoOpacity =
+0.35;
 
 
 
 /*
 ==================================================
-状态显示
+状态
 ==================================================
 */
 
@@ -398,7 +606,7 @@ function setStatus(
 
 /*
 ==================================================
-超时函数
+超时
 ==================================================
 */
 
@@ -444,7 +652,7 @@ async function withTimeout(
 
 /*
 ==================================================
-① 加载 MediaPipe
+MediaPipe 初始化
 ==================================================
 */
 
@@ -514,10 +722,6 @@ async function initMediaPipe(){
     );
 
 
-    /*
-    使用已经验证成功的模型地址。
-    */
-
     poseLandmarker =
 
       await withTimeout(
@@ -576,7 +780,13 @@ async function initMediaPipe(){
       "等待上传人物照片。";
 
 
-    toggleButton.disabled =
+    normalButton.disabled =
+      false;
+
+    xrayButton.disabled =
+      false;
+
+    skeletonButton.disabled =
       false;
 
     clearButton.disabled =
@@ -604,9 +814,7 @@ async function initMediaPipe(){
 
       "<br><br>" +
 
-      "请不要继续修改代码，" +
-
-      "先把这里的错误截图给师傅。";
+      "请把错误截图给师傅。";
 
   }
 
@@ -616,7 +824,7 @@ async function initMediaPipe(){
 
 /*
 ==================================================
-② 上传照片
+上传图片
 ==================================================
 */
 
@@ -651,16 +859,12 @@ function handleFile(event){
 
 
   /*
-  清除旧检测结果
+  清除旧数据
   */
 
   currentResults =
     null;
 
-
-  /*
-  清除旧 Canvas
-  */
 
   ctx.clearRect(
     0,
@@ -671,7 +875,7 @@ function handleFile(event){
 
 
   /*
-  释放旧 URL
+  释放旧图片 URL
   */
 
   if(currentImageURL){
@@ -695,12 +899,13 @@ function handleFile(event){
       );
 
 
-      /*
-      Canvas 必须和原始图片
-      使用相同像素尺寸。
+      viewer.classList.remove(
+        "skeletonOnly"
+      );
 
-      这样 Landmark 的
-      归一化坐标才能准确对应。
+
+      /*
+      Canvas 使用原始图片尺寸
       */
 
       canvas.width =
@@ -708,6 +913,24 @@ function handleFile(event){
 
       canvas.height =
         photo.naturalHeight;
+
+
+      /*
+      每张新照片默认回到
+      原图 + 骨架
+      */
+
+      displayMode =
+        "normal";
+
+
+      photo.style.opacity =
+        "1";
+
+
+      opacityPanel.classList.add(
+        "hidden"
+      );
 
 
       info.innerHTML =
@@ -728,7 +951,7 @@ function handleFile(event){
 
 /*
 ==================================================
-③ MediaPipe 实际检测
+实际检测
 ==================================================
 */
 
@@ -737,11 +960,7 @@ function detectPose(){
   try{
 
     /*
-    关键：
-
-    detect() 直接使用当前图片。
-
-    不使用任何人工坐标。
+    MediaPipe 实际检测
     */
 
     currentResults =
@@ -757,7 +976,7 @@ function detectPose(){
 
 
     /*
-    判断是否真正检测到人物
+    没有人
     */
 
     if(
@@ -778,9 +997,7 @@ function detectPose(){
 
         "❌ <b>没有检测到人物</b><br><br>" +
 
-        "系统没有绘制任何骨架。<br>" +
-
-        "这符合 V1 规则：没有真实检测结果，就不显示假骨架。";
+        "系统没有绘制任何骨架。";
 
 
       return;
@@ -789,9 +1006,7 @@ function detectPose(){
 
 
     /*
-    单人物模式。
-
-    只取第一个检测到的人。
+    单人物
     */
 
     const landmarks =
@@ -799,7 +1014,7 @@ function detectPose(){
 
 
     /*
-    正常绘制
+    默认显示
     */
 
     drawSkeleton(
@@ -817,8 +1032,11 @@ function detectPose(){
       landmarks.length +
       "<br><br>" +
 
-      "注意：这里显示的是 MediaPipe 的 Pose Landmark，" +
-      "它们是 AI 检测点，不等同于医学解剖标志点。";
+      "当前模式：原图 + 骨架<br><br>" +
+
+      "红点 = MediaPipe 实际检测点<br>" +
+
+      "绿线 = MediaPipe 骨架连接关系";
 
 
   }catch(error){
@@ -850,7 +1068,7 @@ function detectPose(){
 
 /*
 ==================================================
-④ 绘制真实骨架
+绘制骨架
 ==================================================
 */
 
@@ -866,17 +1084,23 @@ function drawSkeleton(
   );
 
 
-  if(!skeletonVisible){
+  if(displayMode === "skeleton"){
 
-    return;
+    viewer.classList.add(
+      "skeletonOnly"
+    );
+
+  }else{
+
+    viewer.classList.remove(
+      "skeletonOnly"
+    );
 
   }
 
 
   /*
-  使用 MediaPipe 官方 DrawingUtils。
-
-  不手工制造骨架连接关系。
+  MediaPipe DrawingUtils
   */
 
   const drawingUtils =
@@ -884,7 +1108,7 @@ function drawSkeleton(
 
 
   /*
-  先画连接线
+  连接线
   */
 
   drawingUtils.drawConnectors(
@@ -905,145 +1129,5 @@ function drawSkeleton(
 
 
   /*
-  再画 33 个检测点
-  */
-
-  drawingUtils.drawLandmarks(
-
-    landmarks,
-
-    {
-
-      color:"#FF0000",
-
-      fillColor:"#FF0000",
-
-      lineWidth:2,
-
-      radius:5
-
-    }
-
-  );
-
-}
-
-
-
-/*
-==================================================
-⑤ 显示 / 隐藏骨架
-==================================================
-*/
-
-toggleButton.addEventListener(
-
-  "click",
-
-  () => {
-
-    skeletonVisible =
-      !skeletonVisible;
-
-
-    if(skeletonVisible){
-
-      toggleButton.textContent =
-        "隐藏骨架";
-
-
-      if(
-        currentResults &&
-        currentResults.landmarks &&
-        currentResults.landmarks.length > 0
-      ){
-
-        drawSkeleton(
-          currentResults.landmarks[0]
-        );
-
-      }
-
-    }else{
-
-      toggleButton.textContent =
-        "显示骨架";
-
-
-      ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-
-    }
-
-  }
-
-);
-
-
-
-/*
-==================================================
-⑥ 清除照片
-==================================================
-*/
-
-clearButton.addEventListener(
-
-  "click",
-
-  () => {
-
-    currentResults =
-      null;
-
-
-    ctx.clearRect(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-
-    photo.removeAttribute(
-      "src"
-    );
-
-
-    viewer.classList.add(
-      "hidden"
-    );
-
-
-    fileInput.value =
-      "";
-
-
-    info.innerHTML =
-
-      "等待上传人物照片。";
-
-  }
-
-);
-
-
-
-/*
-==================================================
-启动
-==================================================
-*/
-
-initMediaPipe();
-
-
-</script>
-
-</body>
-
-</html>
+  检测点
+ 
