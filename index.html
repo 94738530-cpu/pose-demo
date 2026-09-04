@@ -2,77 +2,49 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-
-<title>人体 X 光解剖骨架 V3.0</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>人体 X 光解剖骨架 V4.0</title>
 
 <style>
 *{box-sizing:border-box}
-
 body{
   margin:0;
   background:#101010;
   color:#eee;
-  font-family:-apple-system,BlinkMacSystemFont,
-  "PingFang SC","Segoe UI",sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif
 }
-
 header{
   position:sticky;
   top:0;
-  z-index:20;
+  z-index:10;
   background:#171717;
   border-bottom:1px solid #333;
-  padding:12px;
+  padding:12px
 }
-
-h1{
-  margin:0 0 4px;
-  font-size:18px;
-}
-
-.sub{
-  color:#aaa;
-  font-size:11px;
-  line-height:1.5;
-}
-
-.toolbar{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  margin-top:10px;
-}
-
+h1{margin:0 0 4px;font-size:18px}
+.sub{font-size:11px;color:#aaa;line-height:1.5}
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 button,.file{
   background:#292929;
   color:#eee;
   border:1px solid #555;
   border-radius:9px;
   padding:8px 11px;
-  font-size:12px;
+  font-size:12px
 }
-
-button:disabled{
-  opacity:.4;
-}
-
-.file input{
-  display:none;
-}
+button:disabled{opacity:.4}
+.file input{display:none}
 
 main{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 320px;
+  grid-template-columns:minmax(0,1fr) 300px;
   gap:10px;
   padding:10px;
   max-width:1500px;
-  margin:auto;
+  margin:auto
 }
-
 .viewer{
-  min-height:62vh;
+  min-height:60vh;
   background:#050505;
   border:1px solid #333;
   border-radius:12px;
@@ -80,105 +52,74 @@ main{
   overflow:auto;
   display:flex;
   justify-content:center;
-  align-items:flex-start;
+  align-items:flex-start
 }
-
 #empty{
   margin:auto;
   color:#888;
   text-align:center;
-  line-height:1.8;
+  line-height:1.8
 }
-
 #stage{
   position:relative;
   display:none;
-  line-height:0;
+  line-height:0
 }
-
-#img{
-  display:block;
-  max-width:100%;
-  height:auto;
-}
-
+#img{display:block;max-width:100%;height:auto}
 #overlay{
   position:absolute;
   left:0;
   top:0;
-  pointer-events:none;
+  pointer-events:none
 }
-
 .panel{
   background:#191919;
   border:1px solid #333;
   border-radius:12px;
-  padding:12px;
+  padding:12px
 }
-
-.panel h2{
-  font-size:14px;
-  margin:0 0 10px;
-}
-
+.panel h2{font-size:14px;margin:0 0 10px}
 .note{
   background:#222;
   border-radius:9px;
   padding:10px;
   font-size:11px;
-  line-height:1.6;
+  line-height:1.65
 }
-
 .row{
   display:flex;
   align-items:center;
   gap:8px;
   margin:10px 0;
-  font-size:12px;
+  font-size:12px
 }
-
-.row input{
-  flex:1;
-}
-
+.row input{flex:1}
 #status{
   white-space:pre-wrap;
   font-size:11px;
   line-height:1.6;
   color:#bbb;
-  margin-bottom:10px;
+  margin-bottom:10px
 }
-
 .ok{color:#91db9a}
 .bad{color:#ff8585}
-
-.legend{
-  color:#999;
-  font-size:10px;
-  line-height:1.6;
-}
+.legend{color:#999;font-size:10px;line-height:1.7}
 
 @media(max-width:900px){
-  main{
-    grid-template-columns:1fr;
-  }
-
-  .viewer{
-    min-height:50vh;
-  }
+  main{grid-template-columns:1fr}
+  .viewer{min-height:50vh}
 }
 </style>
 </head>
-
 
 <body>
 
 <header>
 
-<h1>人体 X 光解剖骨架 V3.0</h1>
+<h1>人体 X 光解剖骨架 V4.0</h1>
 
 <div class="sub">
-33点姿态 → 关节链 → 解剖骨架模型 → X 光叠合
+33点姿态 → 解剖关节 → 骨骼 Rig → 胸廓 / 脊柱 / 骨盆 / 耻骨 / 股骨
 </div>
 
 <div class="toolbar">
@@ -188,28 +129,13 @@ main{
 <input id="file" type="file" accept="image/*">
 </label>
 
-<button id="detect" disabled>
-开始检测
-</button>
-
-<button id="original" disabled>
-原图
-</button>
-
-<button id="xr" disabled>
-X 光骨骼
-</button>
-
-<button id="boneOnly" disabled>
-仅骨骼
-</button>
-
-<button id="points" disabled>
-检测点
-</button>
+<button id="detect" disabled>开始检测</button>
+<button id="original" disabled>原图</button>
+<button id="xr" disabled>X 光骨骼</button>
+<button id="boneOnly" disabled>仅骨骼</button>
+<button id="points" disabled>检测点</button>
 
 </div>
-
 </header>
 
 
@@ -225,7 +151,6 @@ X 光骨骼
 <div id="stage">
 
 <img id="img">
-
 <canvas id="overlay"></canvas>
 
 </div>
@@ -235,66 +160,51 @@ X 光骨骼
 
 <aside class="panel">
 
-<h2>V3.0 解剖骨架</h2>
+<h2>V4.0 解剖骨架 Rig</h2>
 
-<div id="status">
-等待图片。
-</div>
+<div id="status">等待图片。</div>
 
 <div class="note">
 
-<b>本版核心升级</b><br><br>
+<b>本版不再把骨点当骨头</b><br><br>
 
-不再把一条线直接当作一根骨头。<br><br>
+MediaPipe 只负责姿态定位。<br><br>
 
-现在建立独立结构：<br>
-头骨 · 颈椎 · 锁骨<br>
-胸骨 · 肋骨 · 脊柱<br>
-骨盆 · 骶骨 · 耻骨联合参考<br>
-髋关节 · 股骨 · 髌骨<br>
-胫骨 · 腓骨<br>
-尺骨 · 桡骨<br>
-腕部 · 足部<br><br>
-
-MediaPipe 提供姿态锚点，
-解剖结构由模型根据姿态进行重建。
+骨架 Rig 独立生成：<br>
+• 头骨<br>
+• 锁骨<br>
+• 肩胛骨<br>
+• 胸骨<br>
+• 12对肋骨<br>
+• 颈椎 / 胸椎 / 腰椎<br>
+• 骶骨<br>
+• 左右髂骨<br>
+• 髋臼<br>
+• 股骨头 / 股骨颈<br>
+• 股骨<br>
+• 髌骨<br>
+• 胫骨 / 腓骨<br>
+• 桡骨 / 尺骨<br>
+• 足部骨骼<br>
+• 耻骨联合参考结构
 
 </div>
-
 
 <div class="row">
 <label>人物透明度</label>
-<input id="photoOpacity"
-       type="range"
-       min="10"
-       max="100"
-       value="48">
+<input id="photoOpacity" type="range" min="10" max="100" value="42">
 </div>
-
 
 <div class="row">
 <label>骨骼强度</label>
-<input id="boneOpacity"
-       type="range"
-       min="20"
-       max="100"
-       value="95">
+<input id="boneOpacity" type="range" min="20" max="100" value="95">
 </div>
 
-
 <div class="legend">
-
 白色：主要骨骼<br>
-青色：解剖结构参考<br>
+青色：解剖结构<br>
 红色：高可信姿态点<br>
-黄色：低可信姿态点<br><br>
-
-注意：单张普通照片不能直接看到
-衣物内部真实医学骨骼。
-
-本版本是「姿态驱动的解剖骨架可视化」，
-用于人物结构与比例观察。
-
+黄色：低可信姿态点
 </div>
 
 </aside>
@@ -308,57 +218,44 @@ MediaPipe 提供姿态锚点，
    DOM
 ========================================================= */
 
-const $ = id => document.getElementById(id);
+const $=id=>document.getElementById(id);
 
-const img = $("img");
-const canvas = $("overlay");
-const ctx = canvas.getContext("2d");
+const img=$("img");
+const canvas=$("overlay");
+const ctx=canvas.getContext("2d");
 
-const stage = $("stage");
-const empty = $("empty");
-const status = $("status");
+const stage=$("stage");
+const empty=$("empty");
+const status=$("status");
 
 
 /* =========================================================
    状态
 ========================================================= */
 
-let W = 0;
-let H = 0;
+let W=0;
+let H=0;
 
-let detector = null;
-let landmarks = null;
+let detector=null;
+let landmarks=null;
+let loading=false;
 
-let loading = false;
-
-let displayMode = "original";
-
-let showPoints = false;
+let displayMode="original";
+let showPoints=false;
 
 
 /* =========================================================
-   状态显示
+   状态
 ========================================================= */
 
 function setStatus(text,cls=""){
-
-  status.className = cls;
-  status.textContent = text;
-
+  status.className=cls;
+  status.textContent=text;
 }
 
-
-function enableButtons(enabled){
-
-  [
-    "original",
-    "xr",
-    "boneOnly",
-    "points"
-  ].forEach(id=>{
-    $(id).disabled = !enabled;
-  });
-
+function enableButtons(v){
+  ["original","xr","boneOnly","points"]
+  .forEach(id=>$(id).disabled=!v);
 }
 
 
@@ -367,61 +264,45 @@ function enableButtons(enabled){
 ========================================================= */
 
 function P(i){
-  return landmarks?.[i] || null;
+  return landmarks?.[i]||null;
 }
-
 
 function mid(a,b){
-  return {
-    x:(a.x+b.x)/2,
-    y:(a.y+b.y)/2
-  };
+  return{x:(a.x+b.x)/2,y:(a.y+b.y)/2};
 }
-
 
 function add(a,v,s){
-  return {
-    x:a.x+v.x*s,
-    y:a.y+v.y*s
-  };
+  return{x:a.x+v.x*s,y:a.y+v.y*s};
 }
 
+function sub(a,b){
+  return{x:a.x-b.x,y:a.y-b.y};
+}
 
 function dist(a,b){
-  return Math.hypot(
-    a.x-b.x,
-    a.y-b.y
-  );
+  return Math.hypot(a.x-b.x,a.y-b.y);
 }
-
 
 function unit(a,b){
-
   const dx=b.x-a.x;
   const dy=b.y-a.y;
-
   const d=Math.hypot(dx,dy)||1;
-
-  return {
-    x:dx/d,
-    y:dy/d
-  };
+  return{x:dx/d,y:dy/d};
 }
-
 
 function perp(v){
-  return {
-    x:-v.y,
-    y:v.x
-  };
+  return{x:-v.y,y:v.x};
 }
 
-
 function lerp(a,b,t){
-  return {
+  return{
     x:a.x+(b.x-a.x)*t,
     y:a.y+(b.y-a.y)*t
   };
+}
+
+function clamp(v,a,b){
+  return Math.max(a,Math.min(b,v));
 }
 
 
@@ -429,16 +310,14 @@ function lerp(a,b,t){
    基础绘图
 ========================================================= */
 
-function line(a,b,width,color){
+function line(a,b,w,c){
 
   ctx.beginPath();
-
   ctx.moveTo(a.x,a.y);
   ctx.lineTo(b.x,b.y);
 
-  ctx.lineWidth=width;
-  ctx.strokeStyle=color;
-
+  ctx.lineWidth=w;
+  ctx.strokeStyle=c;
   ctx.stroke();
 
 }
@@ -447,41 +326,51 @@ function line(a,b,width,color){
 function circle(p,r,fill,stroke="",width=1){
 
   ctx.beginPath();
-
-  ctx.arc(
-    p.x,
-    p.y,
-    r,
-    0,
-    Math.PI*2
-  );
+  ctx.arc(p.x,p.y,r,0,Math.PI*2);
 
   ctx.fillStyle=fill;
   ctx.fill();
 
   if(stroke){
-
     ctx.lineWidth=width;
     ctx.strokeStyle=stroke;
     ctx.stroke();
+  }
 
+}
+
+
+function polygon(points,fill,stroke="",width=1){
+
+  if(!points.length)return;
+
+  ctx.beginPath();
+
+  ctx.moveTo(points[0].x,points[0].y);
+
+  for(let i=1;i<points.length;i++){
+    ctx.lineTo(points[i].x,points[i].y);
+  }
+
+  ctx.closePath();
+
+  ctx.fillStyle=fill;
+  ctx.fill();
+
+  if(stroke){
+    ctx.lineWidth=width;
+    ctx.strokeStyle=stroke;
+    ctx.stroke();
   }
 
 }
 
 
 /* =========================================================
-   骨头多边形
+   骨骼实体
 ========================================================= */
 
-function bone(
-  a,
-  b,
-  r1,
-  r2,
-  fill,
-  stroke
-){
+function bone(a,b,r1,r2,fill,stroke){
 
   const u=unit(a,b);
   const n=perp(u);
@@ -491,25 +380,12 @@ function bone(
   const p3=add(b,n,-r2);
   const p4=add(a,n,-r1);
 
-  ctx.beginPath();
-
-  ctx.moveTo(p1.x,p1.y);
-  ctx.lineTo(p2.x,p2.y);
-  ctx.lineTo(p3.x,p3.y);
-  ctx.lineTo(p4.x,p4.y);
-
-  ctx.closePath();
-
-  ctx.fillStyle=fill;
-  ctx.fill();
-
-  if(stroke){
-
-    ctx.lineWidth=1;
-    ctx.strokeStyle=stroke;
-    ctx.stroke();
-
-  }
+  polygon(
+    [p1,p2,p3,p4],
+    fill,
+    stroke,
+    1
+  );
 
 }
 
@@ -518,55 +394,22 @@ function bone(
    椎体
 ========================================================= */
 
-function vertebra(
-  p,
-  size,
-  axis,
-  fill,
-  stroke
-){
+function vertebra(p,size,axis,main,detail){
 
   const n=perp(axis);
 
-  const left=add(
-    p,
-    n,
-    -size
+  const left=add(p,n,-size);
+  const right=add(p,n,size);
+
+  const top=add(p,axis,-size*.75);
+  const bottom=add(p,axis,size*.75);
+
+  polygon(
+    [left,top,right,bottom],
+    "rgba(235,253,255,.86)",
+    detail,
+    1
   );
-
-  const right=add(
-    p,
-    n,
-    size
-  );
-
-  const top=add(
-    p,
-    axis,
-    -size*.72
-  );
-
-  const bottom=add(
-    p,
-    axis,
-    size*.72
-  );
-
-  ctx.beginPath();
-
-  ctx.moveTo(left.x,left.y);
-  ctx.lineTo(top.x,top.y);
-  ctx.lineTo(right.x,right.y);
-  ctx.lineTo(bottom.x,bottom.y);
-
-  ctx.closePath();
-
-  ctx.fillStyle=fill;
-  ctx.fill();
-
-  ctx.lineWidth=1;
-  ctx.strokeStyle=stroke;
-  ctx.stroke();
 
 }
 
@@ -575,7 +418,7 @@ function vertebra(
    头骨
 ========================================================= */
 
-function skull(
+function drawSkull(
   center,
   width,
   height,
@@ -586,33 +429,25 @@ function skull(
 
   ctx.save();
 
-  ctx.translate(
-    center.x,
-    center.y
-  );
-
+  ctx.translate(center.x,center.y);
   ctx.rotate(rotation);
 
 
-  /*
-     颅骨
-  */
+  /* 颅骨主体 */
 
   ctx.beginPath();
 
   ctx.ellipse(
     0,
-    -height*.04,
-    width*.48,
-    height*.48,
+    -height*.08,
+    width*.50,
+    height*.47,
     0,
     0,
     Math.PI*2
   );
 
-  ctx.fillStyle=
-    "rgba(230,250,255,.045)";
-
+  ctx.fillStyle="rgba(225,250,255,.035)";
   ctx.fill();
 
   ctx.lineWidth=2;
@@ -620,90 +455,69 @@ function skull(
   ctx.stroke();
 
 
-  /*
-     面颅
-  */
+  /* 颧弓 */
 
   ctx.beginPath();
 
-  ctx.moveTo(
-    -width*.30,
-    height*.12
-  );
-
-  ctx.quadraticCurveTo(
+  ctx.arc(
     0,
-    height*.45,
-    width*.30,
-    height*.12
+    height*.04,
+    width*.38,
+    0,
+    Math.PI
   );
 
   ctx.strokeStyle=detail;
-  ctx.lineWidth=1.4;
+  ctx.lineWidth=1;
   ctx.stroke();
 
 
-  /*
-     眼眶
-  */
+  /* 眼眶 */
+
+  for(const x of [-.17,.17]){
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      width*x,
+      -height*.03,
+      width*.105,
+      height*.075,
+      0,
+      0,
+      Math.PI*2
+    );
+
+    ctx.strokeStyle=detail;
+    ctx.lineWidth=1.2;
+    ctx.stroke();
+
+  }
+
+
+  /* 鼻腔 */
 
   ctx.beginPath();
 
-  ctx.ellipse(
-    -width*.17,
-    -height*.02,
-    width*.095,
-    height*.075,
-    0,
-    0,
-    Math.PI*2
-  );
+  ctx.moveTo(0,-height*.01);
+  ctx.lineTo(-width*.045,height*.18);
+  ctx.lineTo(width*.045,height*.18);
 
   ctx.stroke();
 
 
-  ctx.beginPath();
-
-  ctx.ellipse(
-    width*.17,
-    -height*.02,
-    width*.095,
-    height*.075,
-    0,
-    0,
-    Math.PI*2
-  );
-
-  ctx.stroke();
-
-
-  /*
-     鼻梁
-  */
-
-  line(
-    {x:0,y:-height*.02},
-    {x:0,y:height*.18},
-    1.2,
-    detail
-  );
-
-
-  /*
-     下颌
-  */
+  /* 下颌 */
 
   ctx.beginPath();
 
   ctx.arc(
     0,
     height*.10,
-    width*.31,
+    width*.30,
     0,
     Math.PI
   );
 
-  ctx.strokeStyle=detail;
   ctx.stroke();
 
 
@@ -719,58 +533,104 @@ function skull(
 function clavicle(
   shoulder,
   center,
-  shoulderWidth,
+  width,
   side,
   color
 ){
 
-  const u=unit(
-    shoulder,
-    center
-  );
-
+  const u=unit(shoulder,center);
   const n=perp(u);
 
-  const start=add(
+  const a=add(
     shoulder,
     u,
-    shoulderWidth*.02
+    width*.015
   );
 
-  const end=add(
+  const b=add(
     center,
     u,
-    -shoulderWidth*.07
+    -width*.06
   );
 
-  const middle=add(
-    mid(start,end),
+  const c=add(
+    mid(a,b),
     n,
-    side*shoulderWidth*.045
+    side*width*.05
   );
 
   ctx.beginPath();
 
-  ctx.moveTo(
-    start.x,
-    start.y
-  );
+  ctx.moveTo(a.x,a.y);
 
   ctx.quadraticCurveTo(
-    middle.x,
-    middle.y,
-    end.x,
-    end.y
+    c.x,c.y,
+    b.x,b.y
   );
 
   ctx.lineWidth=
     Math.max(
       2,
-      shoulderWidth*.016
+      width*.018
     );
 
   ctx.strokeStyle=color;
   ctx.stroke();
+
+}
+
+
+/* =========================================================
+   肩胛骨
+========================================================= */
+
+function scapula(
+  shoulder,
+  width,
+  side,
+  color
+){
+
+  const cx=
+    shoulder.x+
+    side*width*.11;
+
+  const cy=
+    shoulder.y+
+    width*.14;
+
+  const pts=[
+    {
+      x:cx,
+      y:cy-width*.22
+    },
+    {
+      x:cx+side*width*.16,
+      y:cy-width*.03
+    },
+    {
+      x:cx+side*width*.05,
+      y:cy+width*.23
+    },
+    {
+      x:cx-side*width*.08,
+      y:cy+width*.08
+    }
+  ];
+
+  polygon(
+    pts,
+    "rgba(120,235,250,.025)",
+    color,
+    1.4
+  );
+
+  line(
+    pts[0],
+    pts[2],
+    1,
+    color
+  );
 
 }
 
@@ -801,35 +661,85 @@ function rib(
     width
   );
 
-  const crown=add(
+  const top=add(
     center,
     axis,
     -height
   );
 
+  const bottom=add(
+    center,
+    axis,
+    height*.15
+  );
 
   ctx.beginPath();
 
-  ctx.moveTo(
-    left.x,
-    left.y
-  );
+  ctx.moveTo(left.x,left.y);
 
   ctx.quadraticCurveTo(
-    crown.x,
-    crown.y,
+    top.x,
+    top.y,
     right.x,
     right.y
   );
 
-  ctx.lineWidth=
-    Math.max(
-      1.2,
-      width*.024
-    );
+  ctx.quadraticCurveTo(
+    center.x,
+    bottom.y,
+    left.x,
+    left.y
+  );
 
   ctx.strokeStyle=color;
+  ctx.lineWidth=
+    Math.max(
+      1.1,
+      width*.018
+    );
+
   ctx.stroke();
+
+}
+
+
+/* =========================================================
+   胸骨
+========================================================= */
+
+function sternum(
+  top,
+  bottom,
+  width,
+  main,
+  detail
+){
+
+  const axis=unit(top,bottom);
+  const n=perp(axis);
+
+  const midPoint=
+    lerp(top,bottom,.45);
+
+  const upper=
+    add(midPoint,n,width*.35);
+
+  const lower=
+    add(midPoint,n,-width*.35);
+
+  polygon(
+    [
+      add(top,n,-width*.55),
+      upper,
+      add(bottom,n,width*.30),
+      add(bottom,axis,width*.05),
+      add(bottom,n,-width*.30),
+      lower
+    ],
+    "rgba(240,253,255,.82)",
+    detail,
+    1
+  );
 
 }
 
@@ -839,98 +749,47 @@ function rib(
 ========================================================= */
 
 function pelvis(
-  leftHip,
-  rightHip,
+  L,
+  R,
   axis,
   main,
   detail
 ){
 
-  const width=
-    dist(
-      leftHip,
-      rightHip
-    );
-
-  const center=
-    mid(
-      leftHip,
-      rightHip
-    );
-
-  const side=
-    perp(axis);
+  const width=dist(L,R);
+  const center=mid(L,R);
+  const side=perp(axis);
 
 
-  /*
-     髂骨上缘
-  */
+  /* 髂骨上缘 */
 
   const topL=
-    add(
-      leftHip,
-      axis,
-      -width*.22
-    );
+    add(L,axis,-width*.24);
 
   const topR=
-    add(
-      rightHip,
-      axis,
-      -width*.22
-    );
+    add(R,axis,-width*.24);
 
 
-  /*
-     髂骨外侧
-  */
+  /* 髂骨下端 */
 
-  const outerL=
-    add(
-      leftHip,
-      side,
-      -width*.07
-    );
+  const lowL=
+    add(L,axis,width*.22);
 
-  const outerR=
-    add(
-      rightHip,
-      side,
-      -width*.07
-    );
+  const lowR=
+    add(R,axis,width*.22);
 
 
-  const lowerL=
-    add(
-      leftHip,
-      axis,
-      width*.20
-    );
-
-  const lowerR=
-    add(
-      rightHip,
-      axis,
-      width*.20
-    );
-
-
-  /*
-     左髂骨
-  */
+  /* 左髂骨 */
 
   ctx.beginPath();
 
-  ctx.moveTo(
-    topL.x,
-    topL.y
-  );
+  ctx.moveTo(topL.x,topL.y);
 
   ctx.quadraticCurveTo(
-    outerL.x,
-    outerL.y,
-    lowerL.x,
-    lowerL.y
+    L.x-side.x*width*.08,
+    L.y-side.y*width*.08,
+    lowL.x,
+    lowL.y
   );
 
   ctx.strokeStyle=main;
@@ -943,210 +802,144 @@ function pelvis(
   ctx.stroke();
 
 
-  /*
-     右髂骨
-  */
+  /* 右髂骨 */
 
   ctx.beginPath();
 
-  ctx.moveTo(
-    topR.x,
-    topR.y
-  );
+  ctx.moveTo(topR.x,topR.y);
 
   ctx.quadraticCurveTo(
-    outerR.x,
-    outerR.y,
-    lowerR.x,
-    lowerR.y
+    R.x+side.x*width*.08,
+    R.y+side.y*width*.08,
+    lowR.x,
+    lowR.y
   );
 
   ctx.stroke();
 
 
-  /*
-     骨盆上缘
-  */
+  /* 髂骨上缘 */
 
   line(
     topL,
     topR,
-    Math.max(
-      2,
-      width*.015
-    ),
+    Math.max(2,width*.014),
     main
   );
 
 
-  /*
-     骶骨
-  */
+  /* 髋臼 */
+
+  for(const hip of [L,R]){
+
+    circle(
+      hip,
+      width*.105,
+      "rgba(100,230,250,.025)",
+      detail,
+      Math.max(1,width*.009)
+    );
+
+  }
+
+
+  /* 骶骨 */
 
   const sacrumTop=
-    add(
-      center,
-      axis,
-      -width*.08
-    );
+    add(center,axis,-width*.08);
 
   const sacrumBottom=
-    add(
-      center,
-      axis,
-      width*.27
-    );
+    add(center,axis,width*.28);
 
+  const sw=width*.17;
 
-  const sw=width*.16;
-
-
-  const s1=add(
-    sacrumTop,
-    side,
-    -sw
-  );
-
-  const s2=add(
-    sacrumTop,
-    side,
-    sw
-  );
-
-  const s3=add(
-    sacrumBottom,
-    side,
-    sw*.58
-  );
-
-  const s4=add(
-    sacrumBottom,
-    side,
-    -sw*.58
+  polygon(
+    [
+      add(sacrumTop,side,-sw),
+      add(sacrumTop,side,sw),
+      add(sacrumBottom,side,sw*.55),
+      add(sacrumBottom,side,-sw*.55)
+    ],
+    "rgba(225,250,255,.50)",
+    detail,
+    1
   );
 
 
-  ctx.beginPath();
-
-  ctx.moveTo(s1.x,s1.y);
-  ctx.lineTo(s2.x,s2.y);
-  ctx.lineTo(s3.x,s3.y);
-  ctx.lineTo(s4.x,s4.y);
-  ctx.closePath();
-
-  ctx.fillStyle=
-    "rgba(225,250,255,.58)";
-
-  ctx.fill();
-
-  ctx.strokeStyle=detail;
-  ctx.stroke();
-
-
-  /*
-     耻骨联合参考
-  */
+  /* 耻骨联合 */
 
   const pubic=
     add(
       center,
       axis,
-      width*.30
+      width*.31
     );
 
+
+  /* 左右耻骨支 */
+
+  line(
+    lowL,
+    pubic,
+    Math.max(1.5,width*.012),
+    detail
+  );
+
+  line(
+    lowR,
+    pubic,
+    Math.max(1.5,width*.012),
+    detail
+  );
+
+
+  /* 耻骨联合 */
 
   circle(
     pubic,
-    Math.max(
-      2.5,
-      width*.025
-    ),
-    "rgba(250,255,255,.95)",
-    detail
+    Math.max(3,width*.028),
+    "rgba(250,255,255,.96)",
+    detail,
+    1
   );
 
 
-  /*
-     左右耻骨支
-  */
+  /* 耻骨弓 */
 
-  line(
-    lowerL,
-    pubic,
-    Math.max(
-      1.4,
-      width*.010
-    ),
-    detail
-  );
-
-  line(
-    lowerR,
-    pubic,
-    Math.max(
-      1.4,
-      width*.010
-    ),
-    detail
-  );
-
-
-  /*
-     髋臼
-  */
-
-  ctx.lineWidth=
-    Math.max(
-      1.4,
-      width*.010
+  const pubicLeft=
+    add(
+      pubic,
+      side,
+      -width*.10
     );
 
-  ctx.strokeStyle=detail;
-
-
-  ctx.beginPath();
-
-  ctx.arc(
-    leftHip.x,
-    leftHip.y,
-    width*.105,
-    0,
-    Math.PI*2
-  );
-
-  ctx.stroke();
-
-
-  ctx.beginPath();
-
-  ctx.arc(
-    rightHip.x,
-    rightHip.y,
-    width*.105,
-    0,
-    Math.PI*2
-  );
-
-  ctx.stroke();
-
-
-  /*
-     坐骨下缘
-  */
+  const pubicRight=
+    add(
+      pubic,
+      side,
+      width*.10
+    );
 
   ctx.beginPath();
 
   ctx.moveTo(
-    lowerL.x,
-    lowerL.y
+    pubicLeft.x,
+    pubicLeft.y
   );
 
   ctx.quadraticCurveTo(
     pubic.x,
-    pubic.y+width*.10,
-    lowerR.x,
-    lowerR.y
+    pubic.y+width*.11,
+    pubicRight.x,
+    pubicRight.y
   );
+
+  ctx.strokeStyle=detail;
+  ctx.lineWidth=
+    Math.max(
+      1,
+      width*.010
+    );
 
   ctx.stroke();
 
@@ -1154,101 +947,166 @@ function pelvis(
 
 
 /* =========================================================
-   肩胛骨
+   髋关节 + 股骨
 ========================================================= */
 
-function scapula(
-  shoulder,
-  shoulderWidth,
-  side,
-  color
+function femur(
+  hip,
+  knee,
+  hipWidth,
+  main,
+  detail
 ){
 
-  const n={
-    x:side,
-    y:.15
-  };
+  if(!hip||!knee)return;
 
-  const center={
-    x:shoulder.x+n.x*shoulderWidth*.10,
-    y:shoulder.y+shoulderWidth*.15
-  };
+  const u=unit(hip,knee);
+  const n=perp(u);
 
+  const neckLength=
+    hipWidth*.15;
 
-  const pts=[];
+  const headRadius=
+    hipWidth*.055;
 
-  pts.push({
-    x:center.x,
-    y:center.y-shoulderWidth*.20
-  });
+  /*
+     股骨头
+  */
 
-  pts.push({
-    x:center.x+side*shoulderWidth*.13,
-    y:center.y
-  });
+  const head=
+    add(
+      hip,
+      n,
+      hipWidth*.045
+    );
 
-  pts.push({
-    x:center.x,
-    y:center.y+shoulderWidth*.25
-  });
-
-  pts.push({
-    x:center.x-side*shoulderWidth*.08,
-    y:center.y+shoulderWidth*.08
-  });
-
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    pts[0].x,
-    pts[0].y
+  circle(
+    head,
+    headRadius,
+    "rgba(240,253,255,.88)",
+    detail,
+    1
   );
 
-  pts.slice(1).forEach(p=>{
-    ctx.lineTo(p.x,p.y);
-  });
 
-  ctx.closePath();
+  /*
+     股骨颈
+  */
 
-  ctx.fillStyle=
-    "rgba(120,235,250,.035)";
+  const neckEnd=
+    add(
+      hip,
+      u,
+      neckLength
+    );
 
-  ctx.fill();
+  bone(
+    head,
+    neckEnd,
+    hipWidth*.035,
+    hipWidth*.045,
+    "rgba(238,253,255,.85)",
+    detail
+  );
 
-  ctx.strokeStyle=color;
-  ctx.lineWidth=1.3;
-  ctx.stroke();
+
+  /*
+     股骨干
+  */
+
+  bone(
+    neckEnd,
+    knee,
+    hipWidth*.052,
+    hipWidth*.035,
+    "rgba(238,253,255,.92)",
+    detail
+  );
 
 }
 
 
 /* =========================================================
-   手部
+   前臂
 ========================================================= */
 
-function hand(
+function forearm(
+  elbow,
   wrist,
-  index,
   scale,
-  color
+  main,
+  detail
 ){
 
-  if(!wrist)return;
+  if(!elbow||!wrist)return;
 
-  const end=index||{
-    x:wrist.x,
-    y:wrist.y+scale*.12
-  };
+  const u=unit(elbow,wrist);
+  const n=perp(u);
+
+  const offset=
+    scale*.022;
 
 
   bone(
-    wrist,
-    end,
+    add(elbow,n,-offset),
+    add(wrist,n,-offset*.65),
     scale*.020,
     scale*.011,
-    "rgba(235,253,255,.88)",
-    color
+    "rgba(238,253,255,.90)",
+    detail
+  );
+
+
+  bone(
+    add(elbow,n,offset),
+    add(wrist,n,offset*.65),
+    scale*.016,
+    scale*.009,
+    "rgba(238,253,255,.90)",
+    detail
+  );
+
+}
+
+
+/* =========================================================
+   小腿
+========================================================= */
+
+function lowerLeg(
+  knee,
+  ankle,
+  scale,
+  main,
+  detail
+){
+
+  if(!knee||!ankle)return;
+
+  const u=unit(knee,ankle);
+  const n=perp(u);
+
+  const offset=
+    scale*.022;
+
+
+  bone(
+    add(knee,n,-offset),
+    add(ankle,n,-offset*.62),
+    scale*.025,
+    scale*.014,
+    "rgba(238,253,255,.90)",
+    detail
+  );
+
+
+  bone(
+    add(knee,n,offset),
+    add(ankle,n,offset*.62),
+    scale*.013,
+    scale*.009,
+    "rgba(238,253,255,.88)",
+    detail
   );
 
 }
@@ -1269,87 +1127,52 @@ function foot(
 
   if(!ankle)return;
 
-  const end=
-    toe||
-    heel;
+  const end=toe||heel;
 
   if(!end)return;
 
-
-  const u=unit(
-    ankle,
-    end
-  );
-
+  const u=unit(ankle,end);
   const n=perp(u);
 
-
   const midFoot=
-    lerp(
-      ankle,
-      end,
-      .42
-    );
+    lerp(ankle,end,.40);
 
 
-  /*
-     跗骨
-  */
+  /* 跗骨 */
 
   bone(
     ankle,
     midFoot,
     scale*.035,
     scale*.025,
-    "rgba(235,253,255,.88)",
+    "rgba(238,253,255,.86)",
     detail
   );
 
 
-  /*
-     跖骨
-  */
+  /* 跖骨 */
 
   bone(
     midFoot,
     end,
     scale*.023,
     scale*.012,
-    "rgba(235,253,255,.88)",
+    "rgba(238,253,255,.86)",
     detail
   );
 
 
-  /*
-     趾骨参考
-  */
+  /* 趾骨 */
 
   for(let i=0;i<4;i++){
 
-    const offset=
+    const off=
       (i-1.5)*scale*.018;
 
-    const a=
-      add(
-        midFoot,
-        n,
-        offset
-      );
-
-    const b=
-      add(
-        end,
-        n,
-        offset*.75
-      );
-
     line(
-      a,
-      b,
-      Math.max(
-        1,
-        scale*.007
-      ),
+      add(midFoot,n,off),
+      add(end,n,off*.72),
+      Math.max(1,scale*.007),
       detail
     );
 
@@ -1359,7 +1182,7 @@ function foot(
 
 
 /* =========================================================
-   解剖骨架主体
+   解剖骨架
 ========================================================= */
 
 function drawSkeleton(){
@@ -1402,17 +1225,15 @@ function drawSkeleton(){
   )return;
 
 
-  const S=
-    mid(
-      shoulderL,
-      shoulderR
-    );
+  const S=mid(
+    shoulderL,
+    shoulderR
+  );
 
-  const G=
-    mid(
-      hipL,
-      hipR
-    );
+  const G=mid(
+    hipL,
+    hipR
+  );
 
 
   const shoulderWidth=
@@ -1429,28 +1250,18 @@ function drawSkeleton(){
 
 
   const torsoLength=
-    dist(
-      S,
-      G
-    );
+    dist(S,G);
 
 
   const axis=
-    unit(
-      S,
-      G
-    );
-
-
-  const side=
-    perp(axis);
+    unit(S,G);
 
 
   const MAIN=
-    "rgba(242,253,255,.95)";
+    "rgba(242,253,255,.96)";
 
   const DETAIL=
-    "rgba(80,225,245,.78)";
+    "rgba(65,225,245,.86)";
 
 
   ctx.save();
@@ -1461,7 +1272,6 @@ function drawSkeleton(){
     )/100;
 
   ctx.shadowBlur=5;
-
   ctx.shadowColor=
     "rgba(70,225,255,.55)";
 
@@ -1485,7 +1295,7 @@ function drawSkeleton(){
 
     headCenter={
       x:nose.x,
-      y:nose.y-shoulderWidth*.12
+      y:nose.y-shoulderWidth*.10
     };
 
   }
@@ -1493,7 +1303,7 @@ function drawSkeleton(){
 
     headCenter={
       x:S.x,
-      y:S.y-shoulderWidth*.28
+      y:S.y-shoulderWidth*.30
     };
 
   }
@@ -1505,7 +1315,7 @@ function drawSkeleton(){
       : shoulderWidth*.25;
 
 
-  skull(
+  drawSkull(
     headCenter,
     headWidth,
     headWidth*1.22,
@@ -1521,36 +1331,45 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     颈椎
+     脊柱
   ======================================================= */
 
-  const neckTop=
-    add(
-      headCenter,
-      axis,
-      headWidth*.48
-    );
-
-  const neckBottom=
+  const spineTop=
     lerp(
       S,
       G,
-      .08
+      .07
+    );
+
+  const spineBottom=
+    lerp(
+      S,
+      G,
+      .98
     );
 
 
-  for(let i=0;i<7;i++){
+  for(let i=0;i<24;i++){
+
+    const t=i/23;
 
     const p=
       lerp(
-        neckTop,
-        neckBottom,
-        i/6
+        spineTop,
+        spineBottom,
+        t
+      );
+
+    const size=
+      shoulderWidth*
+      (
+        .024-
+        .007*t
       );
 
     vertebra(
       p,
-      shoulderWidth*.023,
+      size,
       axis,
       MAIN,
       DETAIL
@@ -1581,7 +1400,7 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     肩胛
+     肩胛骨
   ======================================================= */
 
   scapula(
@@ -1600,95 +1419,6 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     肱骨
-  ======================================================= */
-
-  if(elbowL){
-
-    bone(
-      shoulderL,
-      elbowL,
-      shoulderWidth*.045,
-      shoulderWidth*.030,
-      MAIN,
-      DETAIL
-    );
-
-  }
-
-
-  if(elbowR){
-
-    bone(
-      shoulderR,
-      elbowR,
-      shoulderWidth*.045,
-      shoulderWidth*.030,
-      MAIN,
-      DETAIL
-    );
-
-  }
-
-
-  /* =======================================================
-     前臂双骨
-  ======================================================= */
-
-  function forearm(
-    elbow,
-    wrist
-  ){
-
-    if(!elbow||!wrist)return;
-
-    const u=
-      unit(
-        elbow,
-        wrist
-      );
-
-    const n=
-      perp(u);
-
-    const offset=
-      shoulderWidth*.020;
-
-
-    bone(
-      add(elbow,n,-offset),
-      add(wrist,n,-offset*.65),
-      shoulderWidth*.020,
-      shoulderWidth*.011,
-      MAIN,
-      DETAIL
-    );
-
-
-    bone(
-      add(elbow,n,offset),
-      add(wrist,n,offset*.65),
-      shoulderWidth*.016,
-      shoulderWidth*.009,
-      MAIN,
-      DETAIL
-    );
-
-  }
-
-
-  forearm(
-    elbowL,
-    wristL
-  );
-
-  forearm(
-    elbowR,
-    wristR
-  );
-
-
-  /* =======================================================
      胸廓
   ======================================================= */
 
@@ -1696,20 +1426,20 @@ function drawSkeleton(){
     lerp(
       S,
       G,
-      .10
+      .12
     );
 
   const ribBottom=
     lerp(
       S,
       G,
-      .59
+      .60
     );
 
 
-  for(let i=0;i<9;i++){
+  for(let i=0;i<12;i++){
 
-    const t=i/8;
+    const t=i/11;
 
     const center=
       lerp(
@@ -1723,12 +1453,16 @@ function drawSkeleton(){
       shoulderWidth*
       (
         .36-
-        .055*t
+        .085*t
       );
 
 
     const height=
-      torsoLength*.035;
+      torsoLength*
+      (
+        .032-
+        .004*t
+      );
 
 
     rib(
@@ -1746,79 +1480,62 @@ function drawSkeleton(){
      胸骨
   ======================================================= */
 
-  const sternumTop=
-    lerp(
-      S,
-      G,
-      .11
-    );
-
-  const sternumBottom=
-    lerp(
-      S,
-      G,
-      .59
-    );
-
-
-  bone(
-    sternumTop,
-    sternumBottom,
-    shoulderWidth*.014,
-    shoulderWidth*.010,
+  sternum(
+    ribTop,
+    ribBottom,
+    shoulderWidth*.20,
     MAIN,
     DETAIL
   );
 
 
   /* =======================================================
-     胸椎 + 腰椎
+     上肢
   ======================================================= */
 
-  const spineTop=
-    lerp(
-      S,
-      G,
-      .08
-    );
+  if(elbowL){
 
-  const spineBottom=
-    lerp(
-      S,
-      G,
-      .97
-    );
-
-
-  for(let i=0;i<20;i++){
-
-    const t=i/19;
-
-    const p=
-      lerp(
-        spineTop,
-        spineBottom,
-        t
-      );
-
-
-    const size=
-      shoulderWidth*
-      (
-        .023-
-        .006*t
-      );
-
-
-    vertebra(
-      p,
-      size,
-      axis,
-      MAIN,
+    bone(
+      shoulderL,
+      elbowL,
+      shoulderWidth*.046,
+      shoulderWidth*.030,
+      "rgba(240,253,255,.94)",
       DETAIL
     );
 
   }
+
+
+  if(elbowR){
+
+    bone(
+      shoulderR,
+      elbowR,
+      shoulderWidth*.046,
+      shoulderWidth*.030,
+      "rgba(240,253,255,.94)",
+      DETAIL
+    );
+
+  }
+
+
+  forearm(
+    elbowL,
+    wristL,
+    shoulderWidth,
+    MAIN,
+    DETAIL
+  );
+
+  forearm(
+    elbowR,
+    wristR,
+    shoulderWidth,
+    MAIN,
+    DETAIL
+  );
 
 
   /* =======================================================
@@ -1835,49 +1552,46 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     股骨
+     下肢
   ======================================================= */
+
+  femur(
+    hipL,
+    kneeL,
+    hipWidth,
+    MAIN,
+    DETAIL
+  );
+
+  femur(
+    hipR,
+    kneeR,
+    hipWidth,
+    MAIN,
+    DETAIL
+  );
+
+
+  /* 髌骨 */
 
   if(kneeL){
 
-    bone(
-      hipL,
+    circle(
       kneeL,
-      hipWidth*.050,
-      hipWidth*.034,
-      MAIN,
-      DETAIL
+      hipWidth*.040,
+      "rgba(240,253,255,.86)",
+      DETAIL,
+      1
     );
 
   }
-
 
   if(kneeR){
 
-    bone(
-      hipR,
-      kneeR,
-      hipWidth*.050,
-      hipWidth*.034,
-      MAIN,
-      DETAIL
-    );
-
-  }
-
-
-  /* =======================================================
-     膝关节 / 髌骨
-  ======================================================= */
-
-  function patella(p){
-
-    if(!p)return;
-
     circle(
-      p,
+      kneeR,
       hipWidth*.040,
-      "rgba(235,253,255,.78)",
+      "rgba(240,253,255,.86)",
       DETAIL,
       1
     );
@@ -1885,89 +1599,22 @@ function drawSkeleton(){
   }
 
 
-  patella(kneeL);
-  patella(kneeR);
-
-
-  /* =======================================================
-     小腿双骨
-  ======================================================= */
-
-  function lowerLeg(
-    knee,
-    ankle
-  ){
-
-    if(!knee||!ankle)return;
-
-    const u=
-      unit(
-        knee,
-        ankle
-      );
-
-    const n=
-      perp(u);
-
-    const offset=
-      hipWidth*.021;
-
-
-    bone(
-      add(knee,n,-offset),
-      add(ankle,n,-offset*.62),
-      hipWidth*.025,
-      hipWidth*.014,
-      MAIN,
-      DETAIL
-    );
-
-
-    bone(
-      add(knee,n,offset),
-      add(ankle,n,offset*.62),
-      hipWidth*.013,
-      hipWidth*.009,
-      MAIN,
-      DETAIL
-    );
-
-  }
-
-
   lowerLeg(
     kneeL,
-    ankleL
+    ankleL,
+    hipWidth,
+    MAIN,
+    DETAIL
   );
 
   lowerLeg(
     kneeR,
-    ankleR
-  );
-
-
-  /* =======================================================
-     手
-  ======================================================= */
-
-  hand(
-    wristL,
-    P(19),
-    shoulderWidth,
+    ankleR,
+    hipWidth,
+    MAIN,
     DETAIL
   );
 
-  hand(
-    wristR,
-    P(20),
-    shoulderWidth,
-    DETAIL
-  );
-
-
-  /* =======================================================
-     足部
-  ======================================================= */
 
   foot(
     ankleL,
@@ -2013,10 +1660,11 @@ function drawSkeleton(){
       p,
       Math.max(
         2,
-        shoulderWidth*.013
+        shoulderWidth*.012
       ),
-      "rgba(235,253,255,.80)",
-      DETAIL
+      "rgba(238,253,255,.78)",
+      DETAIL,
+      1
     );
 
   });
@@ -2028,7 +1676,7 @@ function drawSkeleton(){
 
 
 /* =========================================================
-   MediaPipe 原始检测点
+   MediaPipe 检测点
 ========================================================= */
 
 function drawPoints(){
@@ -2039,10 +1687,9 @@ function drawPoints(){
 
   landmarks.forEach(p=>{
 
-    const visibility=
-      p.v??1;
+    const v=p.v??1;
 
-    if(visibility<.30)return;
+    if(v<.30)return;
 
     circle(
       p,
@@ -2050,9 +1697,9 @@ function drawPoints(){
         3,
         W*.0025
       ),
-      visibility>=.70
-        ? "rgba(255,75,90,.95)"
-        : "rgba(255,205,70,.95)"
+      v>=.70
+        ?"rgba(255,70,90,.95)"
+        :"rgba(255,205,70,.95)"
     );
 
   });
@@ -2158,7 +1805,6 @@ async function loadMediaPipe(){
 
   if(detector)return detector;
 
-
   if(loading){
 
     while(loading){
@@ -2173,9 +1819,7 @@ async function loadMediaPipe(){
 
   }
 
-
   loading=true;
-
 
   try{
 
@@ -2236,7 +1880,7 @@ async function loadMediaPipe(){
 
 
 /* =========================================================
-   人物检测
+   开始检测
 ========================================================= */
 
 async function detectPerson(){
@@ -2288,7 +1932,7 @@ async function detectPerson(){
 
 
       setStatus(
-        "❌ 没有检测到人物。\n\n没有检测到人物就不生成假骨骼。",
+        "❌ 没有检测到人物。\n\n没有检测到人物就不生成骨架。",
         "bad"
       );
 
@@ -2312,7 +1956,7 @@ async function detectPerson(){
 
     displayMode="xr";
 
-    $("photoOpacity").value=48;
+    $("photoOpacity").value=42;
 
 
     enableButtons(true);
@@ -2321,20 +1965,22 @@ async function detectPerson(){
     setStatus(
       `✅ 检测完成：1 人物 / 33 个姿态点
 
-V3.0 解剖骨架已建立。
+V4.0 解剖骨架 Rig 已建立。
 
 重点观察：
 
-① 头骨
-② 胸廓
-③ 脊柱
-④ 骨盆
-⑤ 耻骨联合参考
-⑥ 髋关节
-⑦ 股骨
-⑧ 膝
-⑨ 小腿
-⑩ 踝与足部`,
+头骨
+锁骨
+胸廓
+脊柱
+骨盆
+耻骨联合
+髋关节
+股骨
+膝
+小腿
+踝
+足部`,
       "ok"
     );
 
@@ -2366,7 +2012,7 @@ V3.0 解剖骨架已建立。
 
 /* =========================================================
    上传图片
-   上传后只显示原图
+   不自动检测
 ========================================================= */
 
 $("file").onchange=e=>{
@@ -2396,6 +2042,7 @@ $("file").onchange=e=>{
 
     landmarks=null;
 
+
     enableButtons(false);
 
 
@@ -2423,8 +2070,7 @@ $("file").onchange=e=>{
 
 原图已显示。
 
-确认图片正确后，
-点击「开始检测」。`
+确认人物图后点击「开始检测」。`
     );
 
 
@@ -2451,20 +2097,14 @@ $("file").onchange=e=>{
 
 
 /* =========================================================
-   开始检测
+   按钮
 ========================================================= */
 
 $("detect").onclick=
 async()=>{
-
   await detectPerson();
-
 };
 
-
-/* =========================================================
-   原图
-========================================================= */
 
 $("original").onclick=()=>{
 
@@ -2477,24 +2117,16 @@ $("original").onclick=()=>{
 };
 
 
-/* =========================================================
-   X 光
-========================================================= */
-
 $("xr").onclick=()=>{
 
   displayMode="xr";
 
-  $("photoOpacity").value=48;
+  $("photoOpacity").value=42;
 
   draw();
 
 };
 
-
-/* =========================================================
-   仅骨骼
-========================================================= */
 
 $("boneOnly").onclick=()=>{
 
@@ -2504,10 +2136,6 @@ $("boneOnly").onclick=()=>{
 
 };
 
-
-/* =========================================================
-   检测点
-========================================================= */
 
 $("points").onclick=()=>{
 
@@ -2522,10 +2150,6 @@ $("points").onclick=()=>{
 
 };
 
-
-/* =========================================================
-   滑块
-========================================================= */
 
 $("photoOpacity").oninput=draw;
 
