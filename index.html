@@ -1130,4 +1130,340 @@ function drawSkeleton(
 
   /*
   检测点
- 
+  */
+
+  drawingUtils.drawLandmarks(
+
+    landmarks,
+
+    {
+
+      color:"#FF0000",
+
+      fillColor:"#FF0000",
+
+      lineWidth:2,
+
+      radius:5
+
+    }
+
+  );
+
+}
+
+
+
+/*
+==================================================
+显示模式
+==================================================
+*/
+
+
+/*
+① 原图 + 骨架
+*/
+
+normalButton.addEventListener(
+
+  "click",
+
+  () => {
+
+    if(!currentResults){
+
+      return;
+
+    }
+
+
+    displayMode =
+      "normal";
+
+
+    photo.style.opacity =
+      "1";
+
+
+    opacityPanel.classList.add(
+      "hidden"
+    );
+
+
+    viewer.classList.remove(
+      "skeletonOnly"
+    );
+
+
+    drawSkeleton(
+      currentResults.landmarks[0]
+    );
+
+
+    info.innerHTML =
+
+      "✅ <b>原图 + 骨架</b><br><br>" +
+
+      "人物照片：100%<br>" +
+
+      "骨架：真实 MediaPipe 33 点";
+
+  }
+
+);
+
+
+
+/*
+② 透视骨架
+*/
+
+xrayButton.addEventListener(
+
+  "click",
+
+  () => {
+
+    if(!currentResults){
+
+      return;
+
+    }
+
+
+    displayMode =
+      "xray";
+
+
+    viewer.classList.remove(
+      "skeletonOnly"
+    );
+
+
+    photo.style.opacity =
+      photoOpacity;
+
+
+    opacityPanel.classList.remove(
+      "hidden"
+    );
+
+
+    drawSkeleton(
+      currentResults.landmarks[0]
+    );
+
+
+    info.innerHTML =
+
+      "👁️ <b>透视骨架模式</b><br><br>" +
+
+      "人物照片透明度：" +
+
+      Math.round(
+        photoOpacity * 100
+      ) +
+
+      "%<br>" +
+
+      "骨架保持清晰。<br><br>" +
+
+      "这是显示层变化，" +
+
+      "检测数据没有改变。";
+
+  }
+
+);
+
+
+
+/*
+③ 仅骨架
+*/
+
+skeletonButton.addEventListener(
+
+  "click",
+
+  () => {
+
+    if(!currentResults){
+
+      return;
+
+    }
+
+
+    displayMode =
+      "skeleton";
+
+
+    photo.style.opacity =
+      "0";
+
+
+    opacityPanel.classList.add(
+      "hidden"
+    );
+
+
+    viewer.classList.add(
+      "skeletonOnly"
+    );
+
+
+    drawSkeleton(
+      currentResults.landmarks[0]
+    );
+
+
+    info.innerHTML =
+
+      "🦴 <b>仅骨架模式</b><br><br>" +
+
+      "人物照片：隐藏<br>" +
+
+      "显示：MediaPipe 实际检测到的 Landmark<br>" +
+
+      "数量：" +
+
+      currentResults.landmarks[0].length;
+
+  }
+
+);
+
+
+
+/*
+==================================================
+透视强度滑块
+==================================================
+*/
+
+opacitySlider.addEventListener(
+
+  "input",
+
+  () => {
+
+    const value =
+      Number(
+        opacitySlider.value
+      );
+
+
+    photoOpacity =
+      value / 100;
+
+
+    opacityValue.textContent =
+      value + "%";
+
+
+    if(displayMode === "xray"){
+
+      photo.style.opacity =
+        photoOpacity;
+
+    }
+
+  }
+
+);
+
+
+
+/*
+==================================================
+清除
+==================================================
+*/
+
+clearButton.addEventListener(
+
+  "click",
+
+  () => {
+
+    currentResults =
+      null;
+
+
+    ctx.clearRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    if(currentImageURL){
+
+      URL.revokeObjectURL(
+        currentImageURL
+      );
+
+      currentImageURL =
+        null;
+
+    }
+
+
+    photo.removeAttribute(
+      "src"
+    );
+
+
+    viewer.classList.add(
+      "hidden"
+    );
+
+
+    viewer.classList.remove(
+      "skeletonOnly"
+    );
+
+
+    opacityPanel.classList.add(
+      "hidden"
+    );
+
+
+    fileInput.value =
+      "";
+
+
+    displayMode =
+      "normal";
+
+
+    photo.style.opacity =
+      "1";
+
+
+    info.innerHTML =
+      "等待上传人物照片。";
+
+  }
+
+);
+
+
+
+/*
+==================================================
+启动
+==================================================
+*/
+
+initMediaPipe();
+
+
+</script>
+
+</body>
+
+</html>
