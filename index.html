@@ -2,15 +2,10 @@
 <html lang="zh-CN">
 
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
-
-<title>自动骨架标注 V1.1</title>
+<title>自动骨骼标注 V1.2</title>
 
 <style>
 
@@ -30,7 +25,7 @@ body{
 }
 
 .box{
-  max-width:720px;
+  max-width:760px;
   margin:auto;
   background:white;
   padding:20px;
@@ -80,21 +75,13 @@ h1{
 
 button,
 .fileButton{
-
   border:0;
-
   border-radius:10px;
-
   padding:11px 15px;
-
   font-size:15px;
-
   background:#222;
-
   color:white;
-
   cursor:pointer;
-
   display:inline-block;
 }
 
@@ -106,162 +93,92 @@ button:disabled{
   opacity:.45;
 }
 
-input[type="file"]{
+input[type=file]{
   display:none;
 }
 
-
-/* =========================================
-   透视控制
-========================================= */
-
 .opacityPanel{
-
   padding:14px;
-
   margin-bottom:16px;
-
   background:#f7f7f7;
-
   border-radius:10px;
-
 }
 
 .opacityTitle{
-
   font-size:15px;
-
   margin-bottom:9px;
-
 }
 
 .opacityRow{
-
   display:flex;
-
   align-items:center;
-
   gap:10px;
-
 }
 
 #opacitySlider{
-
   flex:1;
-
 }
 
 #opacityValue{
-
   width:48px;
-
   text-align:right;
-
   font-size:14px;
-
   color:#555;
-
 }
-
-
-/* =========================================
-   图片查看区域
-========================================= */
 
 .viewer{
-
   position:relative;
-
   width:100%;
-
   overflow:hidden;
-
   border-radius:12px;
-
   background:#111;
-
   min-height:100px;
-
   display:flex;
-
   align-items:center;
-
   justify-content:center;
-
 }
-
-
-/*
-照片层
-
-opacity 会由 JavaScript 控制
-*/
 
 #photo{
-
   display:block;
-
   width:100%;
-
   height:auto;
-
   max-width:100%;
-
   transition:opacity .15s ease;
-
 }
-
-
-/*
-Canvas 永远覆盖在照片上面
-*/
 
 #canvas{
-
   position:absolute;
-
   left:0;
-
   top:0;
-
   width:100%;
-
   height:100%;
-
   pointer-events:none;
-
 }
 
+.skeletonOnly{
+  background:#111;
+}
 
 .info{
-
   margin-top:15px;
-
   padding:14px;
-
   background:#f7f7f7;
-
   border-radius:10px;
-
   line-height:1.7;
-
   font-size:14px;
-
 }
 
 .hidden{
   display:none;
 }
 
-
-/*
-仅骨架模式的背景
-*/
-
-.skeletonOnly{
-
-  background:#151515;
-
+.legend{
+  margin-top:12px;
+  padding:12px;
+  background:#fafafa;
+  border-radius:10px;
+  font-size:13px;
+  line-height:1.7;
 }
 
 </style>
@@ -271,48 +188,26 @@ Canvas 永远覆盖在照片上面
 
 <body>
 
-
 <div class="box">
 
-
-<h1>🦴 自动骨架标注 V1.1</h1>
-
+<h1>🦴 自动骨骼标注 V1.2</h1>
 
 <div class="subtitle">
-
 真实 MediaPipe Pose Landmarker<br>
-
-支持：原图 + 骨架 / 透视骨架 / 仅骨架
-
+33 个姿态检测点 → 人体骨骼结构可视化
 </div>
 
 
-<div
-  id="status"
-  class="status wait"
->
-
+<div id="status" class="status wait">
 ⏳ 正在加载 MediaPipe…
-
 </div>
 
-
-<!-- ======================================
-     操作按钮
-====================================== -->
 
 <div class="controls">
 
-
-<label
-  class="fileButton"
-  for="fileInput"
->
-
+<label class="fileButton" for="fileInput">
 📷 选择人物照片
-
 </label>
-
 
 <input
   id="fileInput"
@@ -320,53 +215,24 @@ Canvas 永远覆盖在照片上面
   accept="image/*"
 >
 
-
-<button
-  id="normalButton"
-  disabled
->
-
-📷 原图+骨架
-
+<button id="normalButton" disabled>
+📷 原图+骨骼
 </button>
 
-
-<button
-  id="xrayButton"
-  disabled
->
-
-👁️ 透视骨架
-
+<button id="xrayButton" disabled>
+👁️ 透视骨骼
 </button>
 
-
-<button
-  id="skeletonButton"
-  disabled
->
-
-🦴 仅骨架
-
+<button id="skeletonButton" disabled>
+🦴 仅骨骼
 </button>
 
-
-<button
-  id="clearButton"
-  disabled
->
-
+<button id="clearButton" disabled>
 清除照片
-
 </button>
-
 
 </div>
 
-
-<!-- ======================================
-     透视强度
-====================================== -->
 
 <div
   id="opacityPanel"
@@ -374,39 +240,27 @@ Canvas 永远覆盖在照片上面
 >
 
 <div class="opacityTitle">
-
 👁️ 人物透视强度
-
 </div>
 
-
 <div class="opacityRow">
-
 
 <input
   id="opacitySlider"
   type="range"
   min="0"
   max="100"
-  value="35"
+  value="25"
 >
 
-
 <div id="opacityValue">
-
-35%
-
+25%
 </div>
-
 
 </div>
 
 </div>
 
-
-<!-- ======================================
-     图片区域
-====================================== -->
 
 <div
   id="viewer"
@@ -435,6 +289,20 @@ Canvas 永远覆盖在照片上面
 </div>
 
 
+<div class="legend">
+
+<b>显示说明</b><br>
+
+🔴 红点：MediaPipe 实际检测 Landmark<br>
+
+🦴 粗线：根据真实 Landmark 推导的骨骼段<br>
+
+○ 头部：根据面部 Landmark 计算的头部区域<br>
+
+⚠️ 骨骼图是姿态结构可视化，不代表医学影像中的真实骨骼。
+
+</div>
+
 </div>
 
 
@@ -444,52 +312,31 @@ Canvas 永远覆盖在照片上面
 
 /*
 ==================================================
-自动骨架标注 V1.1
+自动骨骼标注 V1.2
 ==================================================
 
-核心：
+MediaPipe
+    ↓
+真实 33 个 Landmark
+    ↓
+骨骼结构可视化
 
-真实 MediaPipe Pose Landmarker
-
-不使用：
-
-❌ 固定人体坐标
-❌ 固定骨架
-❌ 人工推测骨架
-❌ 上一张照片的数据
-
-新增：
-
-① 原图 + 骨架
-② 透视骨架
-③ 仅骨架
-④ 透视强度控制
-
+不使用固定人物坐标
 ==================================================
 */
 
 
 const BUNDLE_URL =
-
 "https://unpkg.com/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs";
 
 
 const WASM_URL =
-
 "https://unpkg.com/@mediapipe/tasks-vision@0.10.21/wasm";
 
 
 const MODEL_URL =
-
 "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
 
-
-
-/*
-==================================================
-页面元素
-==================================================
-*/
 
 const statusEl =
 document.getElementById("status");
@@ -530,64 +377,21 @@ document.getElementById("canvas");
 const info =
 document.getElementById("info");
 
-
-
 const ctx =
 canvas.getContext("2d");
 
 
-
-/*
-==================================================
-全局变量
-==================================================
-*/
-
 let PoseLandmarker = null;
-
 let FilesetResolver = null;
-
-let DrawingUtils = null;
-
 let poseLandmarker = null;
 
 let currentResults = null;
-
 let currentImageURL = null;
 
-
-/*
-显示模式：
-
-normal
-xray
-skeleton
-
-*/
-
-let displayMode =
-"normal";
+let displayMode = "normal";
+let photoOpacity = 0.25;
 
 
-/*
-透视模式照片透明度
-
-0 = 完全透明
-
-1 = 完全不透明
-
-*/
-
-let photoOpacity =
-0.35;
-
-
-
-/*
-==================================================
-状态
-==================================================
-*/
 
 function setStatus(
   text,
@@ -604,29 +408,19 @@ function setStatus(
 
 
 
-/*
-==================================================
-超时
-==================================================
-*/
-
 function timeout(ms){
 
   return new Promise(
     (_, reject) => {
 
       setTimeout(
-
         () => reject(
           new Error("连接超时")
         ),
-
         ms
-
       );
 
     }
-
   );
 
 }
@@ -639,11 +433,8 @@ async function withTimeout(
 ){
 
   return Promise.race([
-
     promise,
-
     timeout(ms)
-
   ]);
 
 }
@@ -666,13 +457,9 @@ async function initMediaPipe(){
 
 
     const vision =
-
       await withTimeout(
-
         import(BUNDLE_URL),
-
         30000
-
       );
 
 
@@ -682,14 +469,10 @@ async function initMediaPipe(){
     FilesetResolver =
       vision.FilesetResolver;
 
-    DrawingUtils =
-      vision.DrawingUtils;
-
 
     if(
       !PoseLandmarker ||
-      !FilesetResolver ||
-      !DrawingUtils
+      !FilesetResolver
     ){
 
       throw new Error(
@@ -705,7 +488,6 @@ async function initMediaPipe(){
 
 
     const fileset =
-
       await withTimeout(
 
         FilesetResolver.forVisionTasks(
@@ -723,7 +505,6 @@ async function initMediaPipe(){
 
 
     poseLandmarker =
-
       await withTimeout(
 
         PoseLandmarker.createFromOptions(
@@ -733,10 +514,8 @@ async function initMediaPipe(){
           {
 
             baseOptions:{
-
               modelAssetPath:
                 MODEL_URL
-
             },
 
             runningMode:
@@ -769,17 +548,6 @@ async function initMediaPipe(){
     );
 
 
-    info.innerHTML =
-
-      "系统状态：<b>准备完成</b><br>" +
-
-      "检测模式：单人物 / IMAGE<br>" +
-
-      "检测器：Google MediaPipe Pose Landmarker<br>" +
-
-      "等待上传人物照片。";
-
-
     normalButton.disabled =
       false;
 
@@ -791,6 +559,11 @@ async function initMediaPipe(){
 
     clearButton.disabled =
       false;
+
+
+    info.innerHTML =
+      "系统状态：<b>准备完成</b><br>" +
+      "等待上传人物照片。";
 
 
   }catch(error){
@@ -805,16 +578,10 @@ async function initMediaPipe(){
 
 
     info.innerHTML =
-
       "错误信息：<br>" +
-
       String(
         error.message || error
-      ) +
-
-      "<br><br>" +
-
-      "请把错误截图给师傅。";
+      );
 
   }
 
@@ -824,7 +591,7 @@ async function initMediaPipe(){
 
 /*
 ==================================================
-上传图片
+上传照片
 ==================================================
 */
 
@@ -842,9 +609,7 @@ function handleFile(event){
 
 
   if(!file){
-
     return;
-
   }
 
 
@@ -858,10 +623,6 @@ function handleFile(event){
   }
 
 
-  /*
-  清除旧数据
-  */
-
   currentResults =
     null;
 
@@ -873,10 +634,6 @@ function handleFile(event){
     canvas.height
   );
 
-
-  /*
-  释放旧图片 URL
-  */
 
   if(currentImageURL){
 
@@ -899,15 +656,6 @@ function handleFile(event){
       );
 
 
-      viewer.classList.remove(
-        "skeletonOnly"
-      );
-
-
-      /*
-      Canvas 使用原始图片尺寸
-      */
-
       canvas.width =
         photo.naturalWidth;
 
@@ -915,17 +663,17 @@ function handleFile(event){
         photo.naturalHeight;
 
 
-      /*
-      每张新照片默认回到
-      原图 + 骨架
-      */
-
       displayMode =
         "normal";
 
 
       photo.style.opacity =
         "1";
+
+
+      viewer.classList.remove(
+        "skeletonOnly"
+      );
 
 
       opacityPanel.classList.add(
@@ -951,7 +699,7 @@ function handleFile(event){
 
 /*
 ==================================================
-实际检测
+真实人物检测
 ==================================================
 */
 
@@ -959,25 +707,11 @@ function detectPose(){
 
   try{
 
-    /*
-    MediaPipe 实际检测
-    */
-
     currentResults =
       poseLandmarker.detect(
         photo
       );
 
-
-    console.log(
-      "MediaPipe Results:",
-      currentResults
-    );
-
-
-    /*
-    没有人
-    */
 
     if(
       !currentResults ||
@@ -994,10 +728,8 @@ function detectPose(){
 
 
       info.innerHTML =
-
         "❌ <b>没有检测到人物</b><br><br>" +
-
-        "系统没有绘制任何骨架。";
+        "系统不会绘制任何骨骼。";
 
 
       return;
@@ -1005,17 +737,9 @@ function detectPose(){
     }
 
 
-    /*
-    单人物
-    */
-
     const landmarks =
       currentResults.landmarks[0];
 
-
-    /*
-    默认显示
-    */
 
     drawSkeleton(
       landmarks
@@ -1023,20 +747,12 @@ function detectPose(){
 
 
     info.innerHTML =
-
       "✅ <b>检测到人物</b><br><br>" +
-
       "检测人体数量：1<br>" +
-
-      "Pose Landmark 数量：" +
+      "MediaPipe Landmark：" +
       landmarks.length +
       "<br><br>" +
-
-      "当前模式：原图 + 骨架<br><br>" +
-
-      "红点 = MediaPipe 实际检测点<br>" +
-
-      "绿线 = MediaPipe 骨架连接关系";
+      "当前显示：骨骼结构可视化";
 
 
   }catch(error){
@@ -1053,9 +769,7 @@ function detectPose(){
 
 
     info.innerHTML =
-
       "❌ <b>人物检测失败</b><br><br>" +
-
       String(
         error.message || error
       );
@@ -1068,7 +782,726 @@ function detectPose(){
 
 /*
 ==================================================
-绘制骨架
+Landmark 工具
+==================================================
+*/
+
+function P(
+  landmarks,
+  index
+){
+
+  const p =
+    landmarks[index];
+
+
+  if(!p){
+    return null;
+  }
+
+
+  return {
+
+    x:
+      p.x * canvas.width,
+
+    y:
+      p.y * canvas.height,
+
+    z:
+      p.z || 0,
+
+    visibility:
+      p.visibility ?? 1
+
+  };
+
+}
+
+
+
+function distance(a,b){
+
+  if(!a || !b){
+    return 0;
+  }
+
+  return Math.hypot(
+    b.x-a.x,
+    b.y-a.y
+  );
+
+}
+
+
+
+function midpoint(a,b){
+
+  if(!a || !b){
+    return null;
+  }
+
+  return {
+
+    x:(a.x+b.x)/2,
+    y:(a.y+b.y)/2
+
+  };
+
+}
+
+
+
+/*
+==================================================
+骨骼段
+==================================================
+*/
+
+function drawBone(
+  a,
+  b,
+  width
+){
+
+  if(!a || !b){
+    return;
+  }
+
+
+  ctx.save();
+
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    a.x,
+    a.y
+  );
+
+  ctx.lineTo(
+    b.x,
+    b.y
+  );
+
+
+  ctx.lineWidth =
+    width;
+
+  ctx.lineCap =
+    "round";
+
+  ctx.strokeStyle =
+    "#F2F2F2";
+
+  ctx.stroke();
+
+
+  ctx.lineWidth =
+    Math.max(
+      2,
+      width * 0.25
+    );
+
+  ctx.strokeStyle =
+    "#444";
+
+  ctx.stroke();
+
+
+  ctx.restore();
+
+}
+
+
+
+/*
+==================================================
+关节
+==================================================
+*/
+
+function drawJoint(
+  p,
+  radius
+){
+
+  if(!p){
+    return;
+  }
+
+
+  ctx.save();
+
+
+  ctx.beginPath();
+
+  ctx.arc(
+    p.x,
+    p.y,
+    radius,
+    0,
+    Math.PI * 2
+  );
+
+
+  ctx.fillStyle =
+    "#F2F2F2";
+
+  ctx.fill();
+
+
+  ctx.lineWidth =
+    2;
+
+  ctx.strokeStyle =
+    "#333";
+
+  ctx.stroke();
+
+
+  ctx.restore();
+
+}
+
+
+
+/*
+==================================================
+头部
+==================================================
+*/
+
+function drawHead(
+  landmarks
+){
+
+  const nose =
+    P(landmarks,0);
+
+  const leftEye =
+    P(landmarks,2);
+
+  const rightEye =
+    P(landmarks,5);
+
+  const leftEar =
+    P(landmarks,7);
+
+  const rightEar =
+    P(landmarks,8);
+
+
+  if(!nose){
+    return;
+  }
+
+
+  let width = 0;
+
+
+  if(
+    leftEar &&
+    rightEar
+  ){
+
+    width =
+      distance(
+        leftEar,
+        rightEar
+      );
+
+  }
+
+
+  if(width < 20){
+
+    width =
+      distance(
+        leftEye,
+        rightEye
+      ) * 3;
+
+  }
+
+
+  if(width < 20){
+    width = 60;
+  }
+
+
+  const height =
+    width * 1.25;
+
+
+  const center = {
+
+    x:nose.x,
+
+    y:
+      nose.y -
+      height * 0.18
+
+  };
+
+
+  ctx.save();
+
+
+  ctx.beginPath();
+
+
+  ctx.ellipse(
+
+    center.x,
+    center.y,
+
+    width / 2,
+    height / 2,
+
+    0,
+    0,
+    Math.PI * 2
+
+  );
+
+
+  ctx.lineWidth =
+    Math.max(
+      5,
+      width * 0.12
+    );
+
+  ctx.strokeStyle =
+    "#F2F2F2";
+
+  ctx.stroke();
+
+
+  ctx.lineWidth =
+    Math.max(
+      2,
+      width * 0.03
+    );
+
+  ctx.strokeStyle =
+    "#444";
+
+  ctx.stroke();
+
+
+  ctx.restore();
+
+}
+
+
+
+/*
+==================================================
+脊柱
+==================================================
+*/
+
+function drawSpine(
+  landmarks
+){
+
+  const ls =
+    P(landmarks,11);
+
+  const rs =
+    P(landmarks,12);
+
+  const lh =
+    P(landmarks,23);
+
+  const rh =
+    P(landmarks,24);
+
+
+  const shoulderCenter =
+    midpoint(
+      ls,
+      rs
+    );
+
+
+  const hipCenter =
+    midpoint(
+      lh,
+      rh
+    );
+
+
+  if(
+    !shoulderCenter ||
+    !hipCenter
+  ){
+
+    return;
+
+  }
+
+
+  drawBone(
+
+    shoulderCenter,
+
+    hipCenter,
+
+    Math.max(
+      8,
+      distance(
+        ls,
+        rs
+      ) * 0.10
+    )
+
+  );
+
+}
+
+
+
+/*
+==================================================
+肩带
+==================================================
+*/
+
+function drawShoulderGirdle(
+  landmarks
+){
+
+  const ls =
+    P(landmarks,11);
+
+  const rs =
+    P(landmarks,12);
+
+
+  drawBone(
+
+    ls,
+    rs,
+
+    Math.max(
+      7,
+      distance(ls,rs) * 0.12
+    )
+
+  );
+
+}
+
+
+
+/*
+==================================================
+骨盆
+==================================================
+*/
+
+function drawPelvis(
+  landmarks
+){
+
+  const lh =
+    P(landmarks,23);
+
+  const rh =
+    P(landmarks,24);
+
+
+  drawBone(
+
+    lh,
+    rh,
+
+    Math.max(
+      9,
+      distance(lh,rh) * 0.16
+    )
+
+  );
+
+}
+
+
+
+/*
+==================================================
+手臂
+==================================================
+*/
+
+function drawArms(
+  landmarks
+){
+
+  const ls =
+    P(landmarks,11);
+
+  const le =
+    P(landmarks,13);
+
+  const lw =
+    P(landmarks,15);
+
+
+  const rs =
+    P(landmarks,12);
+
+  const re =
+    P(landmarks,14);
+
+  const rw =
+    P(landmarks,16);
+
+
+  drawBone(
+    ls,
+    le,
+    Math.max(
+      7,
+      distance(ls,le)*0.15
+    )
+  );
+
+
+  drawBone(
+    rs,
+    re,
+    Math.max(
+      7,
+      distance(rs,re)*0.15
+    )
+  );
+
+
+  drawBone(
+    le,
+    lw,
+    Math.max(
+      6,
+      distance(le,lw)*0.13
+    )
+  );
+
+
+  drawBone(
+    re,
+    rw,
+    Math.max(
+      6,
+      distance(re,rw)*0.13
+    )
+  );
+
+
+  drawJoint(le,8);
+  drawJoint(re,8);
+  drawJoint(lw,7);
+  drawJoint(rw,7);
+
+}
+
+
+
+/*
+==================================================
+腿
+==================================================
+*/
+
+function drawLegs(
+  landmarks
+){
+
+  const lh =
+    P(landmarks,23);
+
+  const lk =
+    P(landmarks,25);
+
+  const la =
+    P(landmarks,27);
+
+
+  const rh =
+    P(landmarks,24);
+
+  const rk =
+    P(landmarks,26);
+
+  const ra =
+    P(landmarks,28);
+
+
+  drawBone(
+    lh,
+    lk,
+    Math.max(
+      9,
+      distance(lh,lk)*0.16
+    )
+  );
+
+
+  drawBone(
+    rh,
+    rk,
+    Math.max(
+      9,
+      distance(rh,rk)*0.16
+    )
+  );
+
+
+  drawBone(
+    lk,
+    la,
+    Math.max(
+      7,
+      distance(lk,la)*0.13
+    )
+  );
+
+
+  drawBone(
+    rk,
+    ra,
+    Math.max(
+      7,
+      distance(rk,ra)*0.13
+    )
+  );
+
+
+  drawJoint(lk,9);
+  drawJoint(rk,9);
+
+  drawJoint(la,7);
+  drawJoint(ra,7);
+
+}
+
+
+
+/*
+==================================================
+脚
+==================================================
+*/
+
+function drawFeet(
+  landmarks
+){
+
+  const la =
+    P(landmarks,27);
+
+  const lHeel =
+    P(landmarks,29);
+
+  const lToe =
+    P(landmarks,31);
+
+
+  const ra =
+    P(landmarks,28);
+
+  const rHeel =
+    P(landmarks,30);
+
+  const rToe =
+    P(landmarks,32);
+
+
+  drawBone(
+    la,
+    lHeel,
+    6
+  );
+
+
+  drawBone(
+    lHeel,
+    lToe,
+    5
+  );
+
+
+  drawBone(
+    ra,
+    rHeel,
+    6
+  );
+
+
+  drawBone(
+    rHeel,
+    rToe,
+    5
+  );
+
+}
+
+
+
+/*
+==================================================
+主要关节
+==================================================
+*/
+
+function drawMajorJoints(
+  landmarks
+){
+
+  const indexes = [
+
+    11,12,
+
+    13,14,
+
+    15,16,
+
+    23,24,
+
+    25,26,
+
+    27,28
+
+  ];
+
+
+  indexes.forEach(
+
+    index => {
+
+      drawJoint(
+
+        P(
+          landmarks,
+          index
+        ),
+
+        6
+
+      );
+
+    }
+
+  );
+
+}
+
+
+
+/*
+==================================================
+最终骨骼
 ==================================================
 */
 
@@ -1084,67 +1517,119 @@ function drawSkeleton(
   );
 
 
-  if(displayMode === "skeleton"){
-
-    viewer.classList.add(
-      "skeletonOnly"
-    );
-
-  }else{
-
-    viewer.classList.remove(
-      "skeletonOnly"
-    );
-
+  if(!landmarks){
+    return;
   }
 
 
-  /*
-  MediaPipe DrawingUtils
-  */
-
-  const drawingUtils =
-    new DrawingUtils(ctx);
+  drawHead(
+    landmarks
+  );
 
 
-  /*
-  连接线
-  */
+  drawSpine(
+    landmarks
+  );
 
-  drawingUtils.drawConnectors(
 
-    landmarks,
+  drawShoulderGirdle(
+    landmarks
+  );
 
-    PoseLandmarker.POSE_CONNECTIONS,
 
-    {
+  drawPelvis(
+    landmarks
+  );
 
-      color:"#00FF00",
 
-      lineWidth:4
+  drawArms(
+    landmarks
+  );
 
-    }
 
+  drawLegs(
+    landmarks
+  );
+
+
+  drawFeet(
+    landmarks
+  );
+
+
+  drawMajorJoints(
+    landmarks
   );
 
 
   /*
-  检测点
+  原图模式和透视模式
+  显示真实 Landmark 红点
   */
 
-  drawingUtils.drawLandmarks(
+  if(
+    displayMode !== "skeleton"
+  ){
 
-    landmarks,
+    drawOriginalLandmarks(
+      landmarks
+    );
 
-    {
+  }
 
-      color:"#FF0000",
+}
 
-      fillColor:"#FF0000",
 
-      lineWidth:2,
 
-      radius:5
+/*
+==================================================
+显示真实 Landmark
+==================================================
+*/
+
+function drawOriginalLandmarks(
+  landmarks
+){
+
+  landmarks.forEach(
+
+    p => {
+
+      if(!p){
+        return;
+      }
+
+
+      const x =
+        p.x * canvas.width;
+
+      const y =
+        p.y * canvas.height;
+
+
+      ctx.save();
+
+
+      ctx.beginPath();
+
+
+      ctx.arc(
+        x,
+        y,
+        4,
+        0,
+        Math.PI * 2
+      );
+
+
+      ctx.fillStyle =
+        "#FF3030";
+
+
+      ctx.fill();
+
+
+      ctx.restore();
 
     }
 
@@ -1156,13 +1641,8 @@ function drawSkeleton(
 
 /*
 ==================================================
-显示模式
+原图 + 骨骼
 ==================================================
-*/
-
-
-/*
-① 原图 + 骨架
 */
 
 normalButton.addEventListener(
@@ -1172,9 +1652,7 @@ normalButton.addEventListener(
   () => {
 
     if(!currentResults){
-
       return;
-
     }
 
 
@@ -1203,11 +1681,11 @@ normalButton.addEventListener(
 
     info.innerHTML =
 
-      "✅ <b>原图 + 骨架</b><br><br>" +
+      "📷 <b>原图 + 骨骼</b><br><br>" +
 
       "人物照片：100%<br>" +
 
-      "骨架：真实 MediaPipe 33 点";
+      "骨骼：由真实 MediaPipe Landmark 推导。";
 
   }
 
@@ -1216,7 +1694,9 @@ normalButton.addEventListener(
 
 
 /*
-② 透视骨架
+==================================================
+透视骨骼
+==================================================
 */
 
 xrayButton.addEventListener(
@@ -1226,19 +1706,12 @@ xrayButton.addEventListener(
   () => {
 
     if(!currentResults){
-
       return;
-
     }
 
 
     displayMode =
       "xray";
-
-
-    viewer.classList.remove(
-      "skeletonOnly"
-    );
 
 
     photo.style.opacity =
@@ -1250,6 +1723,11 @@ xrayButton.addEventListener(
     );
 
 
+    viewer.classList.remove(
+      "skeletonOnly"
+    );
+
+
     drawSkeleton(
       currentResults.landmarks[0]
     );
@@ -1257,7 +1735,7 @@ xrayButton.addEventListener(
 
     info.innerHTML =
 
-      "👁️ <b>透视骨架模式</b><br><br>" +
+      "👁️ <b>透视骨骼模式</b><br><br>" +
 
       "人物照片透明度：" +
 
@@ -1265,13 +1743,11 @@ xrayButton.addEventListener(
         photoOpacity * 100
       ) +
 
-      "%<br>" +
+      "%<br><br>" +
 
-      "骨架保持清晰。<br><br>" +
+      "白色粗线：骨骼结构可视化<br>" +
 
-      "这是显示层变化，" +
-
-      "检测数据没有改变。";
+      "红点：真实 MediaPipe Landmark";
 
   }
 
@@ -1280,7 +1756,9 @@ xrayButton.addEventListener(
 
 
 /*
-③ 仅骨架
+==================================================
+仅骨骼
+==================================================
 */
 
 skeletonButton.addEventListener(
@@ -1290,9 +1768,7 @@ skeletonButton.addEventListener(
   () => {
 
     if(!currentResults){
-
       return;
-
     }
 
 
@@ -1321,15 +1797,13 @@ skeletonButton.addEventListener(
 
     info.innerHTML =
 
-      "🦴 <b>仅骨架模式</b><br><br>" +
+      "🦴 <b>仅骨骼模式</b><br><br>" +
 
       "人物照片：隐藏<br>" +
 
-      "显示：MediaPipe 实际检测到的 Landmark<br>" +
+      "显示：根据真实 MediaPipe Landmark 推导的骨骼结构<br><br>" +
 
-      "数量：" +
-
-      currentResults.landmarks[0].length;
+      "这不是医学 X 光骨骼，而是人体姿态结构可视化。";
 
   }
 
@@ -1339,7 +1813,7 @@ skeletonButton.addEventListener(
 
 /*
 ==================================================
-透视强度滑块
+透视强度
 ==================================================
 */
 
@@ -1363,7 +1837,9 @@ opacitySlider.addEventListener(
       value + "%";
 
 
-    if(displayMode === "xray"){
+    if(
+      displayMode === "xray"
+    ){
 
       photo.style.opacity =
         photoOpacity;
