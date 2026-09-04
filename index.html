@@ -2,37 +2,40 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>人体 X 光解剖骨架 V5.0</title>
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<title>人体 X 光解剖骨架 V6.0</title>
 
 <style>
 *{box-sizing:border-box}
 
 body{
   margin:0;
-  background:#101010;
+  background:#0b0d0f;
   color:#eee;
-  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",
+              "Segoe UI",sans-serif;
 }
 
 header{
   position:sticky;
   top:0;
   z-index:20;
-  background:#171717;
-  border-bottom:1px solid #333;
   padding:12px;
+  background:#151719;
+  border-bottom:1px solid #303338;
 }
 
 h1{
-  margin:0 0 5px;
+  margin:0 0 4px;
   font-size:19px;
 }
 
 .sub{
-  color:#aaa;
+  color:#9da3aa;
   font-size:11px;
-  line-height:1.55;
+  line-height:1.6;
 }
 
 .toolbar{
@@ -42,17 +45,18 @@ h1{
   margin-top:10px;
 }
 
-button,.file{
-  background:#292929;
-  color:#eee;
+button,
+.file{
   border:1px solid #555;
+  background:#292c30;
+  color:#eee;
   border-radius:9px;
   padding:8px 11px;
   font-size:12px;
 }
 
 button:disabled{
-  opacity:.38;
+  opacity:.35;
 }
 
 .file input{
@@ -69,11 +73,11 @@ main{
 }
 
 .viewer{
-  min-height:60vh;
-  background:#050505;
-  border:1px solid #333;
+  background:#020303;
+  border:1px solid #303338;
   border-radius:12px;
   padding:10px;
+  min-height:60vh;
   overflow:auto;
   display:flex;
   justify-content:center;
@@ -83,7 +87,8 @@ main{
 #empty{
   margin:auto;
   text-align:center;
-  color:#888;
+  color:#777;
+  font-size:13px;
   line-height:1.8;
 }
 
@@ -107,8 +112,8 @@ main{
 }
 
 .panel{
-  background:#191919;
-  border:1px solid #333;
+  background:#17191b;
+  border:1px solid #303338;
   border-radius:12px;
   padding:12px;
 }
@@ -119,12 +124,23 @@ main{
 }
 
 .note{
-  background:#222;
+  background:#202327;
   border-radius:9px;
   padding:10px;
   font-size:11px;
-  line-height:1.7;
+  line-height:1.75;
 }
+
+.status{
+  white-space:pre-wrap;
+  color:#aeb4bb;
+  font-size:11px;
+  line-height:1.65;
+  margin-bottom:10px;
+}
+
+.ok{color:#8ce19a}
+.bad{color:#ff8585}
 
 .row{
   display:flex;
@@ -138,19 +154,8 @@ main{
   flex:1;
 }
 
-#status{
-  white-space:pre-wrap;
-  font-size:11px;
-  line-height:1.6;
-  color:#bbb;
-  margin-bottom:10px;
-}
-
-.ok{color:#91db9a}
-.bad{color:#ff8585}
-
-.legend{
-  color:#999;
+.small{
+  color:#858b92;
   font-size:10px;
   line-height:1.7;
 }
@@ -159,6 +164,7 @@ main{
   main{
     grid-template-columns:1fr;
   }
+
   .viewer{
     min-height:50vh;
   }
@@ -170,10 +176,10 @@ main{
 
 <header>
 
-<h1>人体 X 光解剖骨架 V5.0</h1>
+<h1>人体 X 光解剖骨架 V6.0</h1>
 
 <div class="sub">
-33点姿态 → 解剖关节 → 骨骼 Rig → 胸廓 → 脊柱 → 骨盆 → 耻骨 → 股骨
+MediaPipe 2D + 3D World Pose → 3D Anatomical Rig → 投影回人物照片
 </div>
 
 <div class="toolbar">
@@ -184,9 +190,10 @@ main{
 </label>
 
 <button id="detect" disabled>开始检测</button>
+
 <button id="original" disabled>原图</button>
-<button id="xr" disabled>X 光骨骼</button>
-<button id="boneOnly" disabled>仅骨骼</button>
+<button id="xr" disabled>X 光骨架</button>
+<button id="rig" disabled>3D Rig</button>
 <button id="points" disabled>检测点</button>
 
 </div>
@@ -199,13 +206,14 @@ main{
 <section class="viewer">
 
 <div id="empty">
-先打开人物图<br>
-确认图片后点击「开始检测」
+先打开人物图片<br>
+然后点击「开始检测」
 </div>
 
 <div id="stage">
 
 <img id="img">
+
 <canvas id="overlay"></canvas>
 
 </div>
@@ -215,36 +223,34 @@ main{
 
 <aside class="panel">
 
-<h2>V5.0 解剖骨架 Rig</h2>
+<h2>V6.0 3D Anatomical Rig</h2>
 
-<div id="status">等待人物图片。</div>
+<div id="status" class="status">
+等待人物图片。
+</div>
 
 <div class="note">
 
-<b>本版核心</b><br><br>
+<b>本版改变</b><br><br>
 
-MediaPipe 只负责提供人物真实姿态。<br><br>
+V5：<br>
+33点 → 2D解剖图形<br><br>
 
-骨架结构独立于 33 个检测点：<br><br>
+V6：<br>
+33点2D姿态<br>
+＋<br>
+33点3D World Pose<br>
+↓<br>
+人体3D骨架坐标系<br>
+↓<br>
+胸廓 / 脊柱 / 骨盆 / 股骨等 Rig<br>
+↓<br>
+重新投影到人物照片<br><br>
 
-头骨<br>
-锁骨 / 肩胛<br>
-胸骨 / 肋骨<br>
-颈椎 / 胸椎 / 腰椎<br>
-骶骨<br>
-左右髂骨<br>
-髋臼<br>
-耻骨联合<br>
-股骨头 / 股骨颈 / 股骨<br>
-髌骨<br>
-胫骨 / 腓骨<br>
-尺骨 / 桡骨<br>
-足部骨骼<br><br>
+这不是继续给二维图片“画线”。
 
-<b>重点：</b><br>
-骨盆 → 耻骨 → 髋 → 股骨 → 膝 → 踝
-
-这一条用于后续人物比例检测。
+而是开始建立真正的
+<b>3D人体骨骼坐标层</b>。
 
 </div>
 
@@ -255,7 +261,7 @@ MediaPipe 只负责提供人物真实姿态。<br><br>
        type="range"
        min="5"
        max="100"
-       value="38">
+       value="42">
 </div>
 
 
@@ -269,16 +275,38 @@ MediaPipe 只负责提供人物真实姿态。<br><br>
 </div>
 
 
-<div class="legend">
+<div class="row">
+<label>Rig 深度</label>
+<input id="depth"
+       type="range"
+       min="50"
+       max="180"
+       value="100">
+</div>
 
-白色：主要骨骼<br>
-青色：解剖结构<br>
-红色：高可信姿态点<br>
-黄色：低可信姿态点<br><br>
 
-本版本用于视觉比例检查，
-不是医学影像，也不声称从照片直接
-检测衣物内部真实骨骼。
+<div class="small">
+
+<b>重点观察：</b><br><br>
+
+① 头部中心<br>
+② 肩线<br>
+③ 胸骨<br>
+④ 脊柱<br>
+⑤ 肋廓<br>
+⑥ 骨盆<br>
+⑦ 耻骨联合<br>
+⑧ 髋关节<br>
+⑨ 股骨<br>
+⑩ 膝关节<br>
+⑪ 踝关节<br><br>
+
+V6 的目的不是追求“画得漂亮”，
+而是验证：
+
+<b>
+3D姿态是否能够成为解剖骨架的驱动源。
+</b>
 
 </div>
 
@@ -290,33 +318,29 @@ MediaPipe 只负责提供人物真实姿态。<br><br>
 <script type="module">
 
 /* =========================================================
-   DOM
+   V6.0
+   3D Anatomical Rig Prototype
 ========================================================= */
 
 const $ = id => document.getElementById(id);
 
-const img = $("img");
-const canvas = $("overlay");
-const ctx = canvas.getContext("2d");
+const img       = $("img");
+const canvas    = $("overlay");
+const ctx       = canvas.getContext("2d");
 
-const stage = $("stage");
-const empty = $("empty");
-const status = $("status");
+const stage     = $("stage");
+const empty     = $("empty");
+const statusBox = $("status");
 
-
-/* =========================================================
-   STATE
-========================================================= */
+let detector = null;
 
 let W = 0;
 let H = 0;
 
-let detector = null;
-let landmarks = null;
+let pose2D = null;
+let pose3D = null;
 
-let loading = false;
-
-let displayMode = "original";
+let mode = "original";
 let showPoints = false;
 
 
@@ -324,94 +348,401 @@ let showPoints = false;
    STATUS
 ========================================================= */
 
-function setStatus(text, cls=""){
-  status.className = cls;
-  status.textContent = text;
+function status(text, cls=""){
+  statusBox.className =
+    "status " + cls;
+
+  statusBox.textContent = text;
 }
 
-function enableResultButtons(enabled){
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+function enableButtons(ok){
 
   [
     "original",
     "xr",
-    "boneOnly",
+    "rig",
     "points"
   ].forEach(id=>{
-    $(id).disabled = !enabled;
+    $(id).disabled=!ok;
   });
 
 }
 
 
 /* =========================================================
-   MATH
+   VECTOR
 ========================================================= */
 
-function P(i){
-  return landmarks?.[i] || null;
+function V(x=0,y=0,z=0){
+  return {x,y,z};
 }
 
-function mid(a,b){
+function add(a,b){
   return {
-    x:(a.x+b.x)/2,
-    y:(a.y+b.y)/2
+    x:a.x+b.x,
+    y:a.y+b.y,
+    z:a.z+b.z
   };
 }
 
-function add(a,v,s){
+function sub(a,b){
   return {
-    x:a.x+v.x*s,
-    y:a.y+v.y*s
+    x:a.x-b.x,
+    y:a.y-b.y,
+    z:a.z-b.z
   };
 }
 
-function dist(a,b){
-  return Math.hypot(
-    a.x-b.x,
-    a.y-b.y
+function mul(a,s){
+  return {
+    x:a.x*s,
+    y:a.y*s,
+    z:a.z*s
+  };
+}
+
+function length3(a){
+  return Math.sqrt(
+    a.x*a.x+
+    a.y*a.y+
+    a.z*a.z
   );
 }
 
-function unit(a,b){
+function normalize3(a){
 
-  const dx=b.x-a.x;
-  const dy=b.y-a.y;
-
-  const d=Math.hypot(dx,dy)||1;
+  const d=length3(a)||1;
 
   return {
-    x:dx/d,
-    y:dy/d
+    x:a.x/d,
+    y:a.y/d,
+    z:a.z/d
   };
+
 }
 
-function perp(v){
+function cross(a,b){
+
   return {
-    x:-v.y,
-    y:v.x
+    x:a.y*b.z-a.z*b.y,
+    y:a.z*b.x-a.x*b.z,
+    z:a.x*b.y-a.y*b.x
   };
+
 }
 
-function lerp(a,b,t){
+function dot(a,b){
+
+  return (
+    a.x*b.x+
+    a.y*b.y+
+    a.z*b.z
+  );
+
+}
+
+function midpoint3(a,b){
+
   return {
-    x:a.x+(b.x-a.x)*t,
-    y:a.y+(b.y-a.y)*t
+    x:(a.x+b.x)/2,
+    y:(a.y+b.y)/2,
+    z:(a.z+b.z)/2
   };
+
 }
 
 
 /* =========================================================
-   BASIC DRAW
+   LANDMARK ACCESS
 ========================================================= */
 
-function line(a,b,w,color){
+function L(i){
+
+  return pose2D?.[i] || null;
+
+}
+
+function W3(i){
+
+  return pose3D?.[i] || null;
+
+}
+
+
+/* =========================================================
+   2D → PIXEL
+========================================================= */
+
+function px(p){
+
+  return {
+    x:p.x*W,
+    y:p.y*H
+  };
+
+}
+
+
+/* =========================================================
+   3D BODY FRAME
+========================================================= */
+
+function buildBodyFrame(){
+
+  const ls=W3(11);
+  const rs=W3(12);
+
+  const lh=W3(23);
+  const rh=W3(24);
+
+  if(!ls||!rs||!lh||!rh)
+    return null;
+
+
+  const shoulder=
+    midpoint3(ls,rs);
+
+  const hip=
+    midpoint3(lh,rh);
+
+
+  const right=
+    normalize3(
+      sub(rs,ls)
+    );
+
+
+  const down=
+    normalize3(
+      sub(hip,shoulder)
+    );
+
+
+  let forward=
+    normalize3(
+      cross(right,down)
+    );
+
+
+  /*
+     MediaPipe world coordinate
+     may point in opposite camera direction
+     depending on image orientation.
+
+     For visualization we only need
+     a stable orthogonal body frame.
+  */
+
+  if(forward.z>0){
+    forward=mul(forward,-1);
+  }
+
+
+  const correctedRight=
+    normalize3(
+      cross(down,forward)
+    );
+
+
+  return {
+    shoulder,
+    hip,
+    right:correctedRight,
+    down,
+    forward
+  };
+
+}
+
+
+/* =========================================================
+   BODY SCALE
+========================================================= */
+
+function bodyScale(frame){
+
+  const shoulderWidth=
+    length3(
+      sub(
+        W3(11),
+        W3(12)
+      )
+    );
+
+  const torso=
+    length3(
+      sub(
+        frame.hip,
+        frame.shoulder
+      )
+    );
+
+  return Math.max(
+    shoulderWidth,
+    torso*.65,
+    .01
+  );
+
+}
+
+
+/* =========================================================
+   3D → 2D ANCHOR
+========================================================= */
+
+function project3DPoint(
+  point,
+  anchorIndex,
+  frame
+){
+
+  /*
+     Important design choice:
+
+     The 2D position comes from the
+     detected image landmark.
+
+     3D world coordinates control
+     anatomical depth and orientation.
+
+     This prevents the Rig from
+     drifting away from the person
+     while still giving us a 3D body layer.
+  */
+
+  const anchor=L(anchorIndex);
+
+  if(!anchor)return null;
+
+  const a=px(anchor);
+
+  const rel=
+    sub(
+      point,
+      W3(anchorIndex)
+    );
+
+
+  const depthScale=
+    Number(
+      $("depth").value
+    )/100;
+
+
+  const sideShift=
+    dot(
+      rel,
+      frame.right
+    );
+
+
+  const verticalShift=
+    dot(
+      rel,
+      frame.down
+    );
+
+
+  const depthShift=
+    dot(
+      rel,
+      frame.forward
+    );
+
+
+  /*
+     Convert body-space displacement
+     into image-space displacement.
+  */
+
+  const bodyPx=
+    W*.30;
+
+
+  return {
+    x:
+      a.x+
+      sideShift*
+      bodyPx*
+      depthScale,
+
+    y:
+      a.y+
+      verticalShift*
+      bodyPx*
+      depthScale,
+
+    z:depthShift
+
+  };
+
+}
+
+
+/* =========================================================
+   3D ANATOMICAL RIG POINT
+========================================================= */
+
+function rigPoint(
+  anchorIndex,
+  localX,
+  localY,
+  localZ,
+  frame,
+  scale
+){
+
+  const anchor=W3(anchorIndex);
+
+  if(!anchor)return null;
+
+
+  const p=
+    add(
+      anchor,
+      add(
+        add(
+          mul(frame.right,localX*scale),
+          mul(frame.down,localY*scale)
+        ),
+        mul(frame.forward,localZ*scale)
+      )
+    );
+
+
+  return project3DPoint(
+    p,
+    anchorIndex,
+    frame
+  );
+
+}
+
+
+/* =========================================================
+   DRAW HELPERS
+========================================================= */
+
+function line(
+  a,
+  b,
+  width,
+  color
+){
+
+  if(!a||!b)return;
 
   ctx.beginPath();
 
   ctx.moveTo(a.x,a.y);
   ctx.lineTo(b.x,b.y);
 
-  ctx.lineWidth=w;
+  ctx.lineWidth=width;
   ctx.strokeStyle=color;
 
   ctx.stroke();
@@ -426,6 +757,8 @@ function circle(
   stroke="",
   width=1
 ){
+
+  if(!p)return;
 
   ctx.beginPath();
 
@@ -451,14 +784,772 @@ function circle(
 }
 
 
-function polygon(
-  pts,
-  fill,
-  stroke="",
-  width=1
+function ellipse(
+  p,
+  rx,
+  ry,
+  rotation,
+  stroke
 ){
 
-  if(!pts.length)return;
+  if(!p)return;
+
+  ctx.save();
+
+  ctx.translate(
+    p.x,
+    p.y
+  );
+
+  ctx.rotate(rotation);
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    0,
+    0,
+    rx,
+    ry,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  ctx.strokeStyle=stroke;
+  ctx.lineWidth=1.5;
+
+  ctx.stroke();
+
+  ctx.restore();
+
+}
+
+
+function polyline(
+  pts,
+  width,
+  color
+){
+
+  const valid=
+    pts.filter(Boolean);
+
+  if(valid.length<2)return;
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    valid[0].x,
+    valid[0].y
+  );
+
+  for(let i=1;i<valid.length;i++){
+
+    ctx.lineTo(
+      valid[i].x,
+      valid[i].y
+    );
+
+  }
+
+  ctx.lineWidth=width;
+  ctx.strokeStyle=color;
+
+  ctx.stroke();
+
+}
+
+
+/* =========================================================
+   ANATOMICAL CYLINDER
+========================================================= */
+
+function bone(
+  a,
+  b,
+  r,
+  main,
+  detail
+){
+
+  if(!a||!b)return;
+
+
+  const u={
+    x:b.x-a.x,
+    y:b.y-a.y
+  };
+
+  const d=
+    Math.hypot(
+      u.x,
+      u.y
+    )||1;
+
+
+  const nx=-u.y/d;
+  const ny=u.x/d;
+
+
+  const p1={
+    x:a.x+nx*r,
+    y:a.y+ny*r
+  };
+
+  const p2={
+    x:b.x+nx*r*.72,
+    y:b.y+ny*r*.72
+  };
+
+  const p3={
+    x:b.x-nx*r*.72,
+    y:b.y-ny*r*.72
+  };
+
+  const p4={
+    x:a.x-nx*r,
+    y:a.y-ny*r
+  };
+
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    p1.x,
+    p1.y
+  );
+
+  ctx.lineTo(
+    p2.x,
+    p2.y
+  );
+
+  ctx.lineTo(
+    p3.x,
+    p3.y
+  );
+
+  ctx.lineTo(
+    p4.x,
+    p4.y
+  );
+
+  ctx.closePath();
+
+  ctx.fillStyle=
+    "rgba(240,252,255,.72)";
+
+  ctx.fill();
+
+  ctx.strokeStyle=detail;
+  ctx.lineWidth=.8;
+
+  ctx.stroke();
+
+
+  circle(
+    a,
+    r,
+    "rgba(244,253,255,.85)",
+    detail,
+    .8
+  );
+
+  circle(
+    b,
+    r*.72,
+    "rgba(244,253,255,.85)",
+    detail,
+    .8
+  );
+
+}
+
+
+/* =========================================================
+   SKULL
+========================================================= */
+
+function drawSkull(
+  center,
+  width,
+  height,
+  rotation,
+  main,
+  detail
+){
+
+  if(!center)return;
+
+  ctx.save();
+
+  ctx.translate(
+    center.x,
+    center.y
+  );
+
+  ctx.rotate(rotation);
+
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    0,
+    -height*.08,
+    width*.49,
+    height*.46,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fillStyle=
+    "rgba(225,250,255,.025)";
+
+  ctx.fill();
+
+  ctx.strokeStyle=main;
+  ctx.lineWidth=2;
+
+  ctx.stroke();
+
+
+  /* orbital cavities */
+
+  for(const x of [-.18,.18]){
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      width*x,
+      -height*.01,
+      width*.105,
+      height*.075,
+      0,
+      0,
+      Math.PI*2
+    );
+
+    ctx.strokeStyle=detail;
+    ctx.lineWidth=1.1;
+
+    ctx.stroke();
+
+  }
+
+
+  /* nasal */
+
+  ctx.beginPath();
+
+  ctx.moveTo(0,-height*.01);
+  ctx.lineTo(-width*.045,height*.17);
+  ctx.lineTo(width*.045,height*.17);
+
+  ctx.strokeStyle=detail;
+  ctx.stroke();
+
+
+  /* mandible */
+
+  ctx.beginPath();
+
+  ctx.arc(
+    0,
+    height*.10,
+    width*.29,
+    0,
+    Math.PI
+  );
+
+  ctx.strokeStyle=detail;
+  ctx.stroke();
+
+
+  ctx.restore();
+
+}
+
+
+/* =========================================================
+   3D RIG DRAWING
+========================================================= */
+
+function draw3DRig(){
+
+  const frame=
+    buildBodyFrame();
+
+  if(!frame)return;
+
+
+  const scale=
+    bodyScale(frame);
+
+
+  const MAIN=
+    "rgba(244,253,255,.98)";
+
+  const DETAIL=
+    "rgba(48,226,247,.90)";
+
+
+  ctx.save();
+
+  ctx.globalAlpha=
+    Number(
+      $("boneOpacity").value
+    )/100;
+
+
+  /*
+     -------------------------------------------------------
+     HEAD
+  */
+
+  const earL=L(7);
+  const earR=L(8);
+
+  const head=
+    earL&&earR
+      ? {
+          x:(px(earL).x+px(earR).x)/2,
+          y:(px(earL).y+px(earR).y)/2
+        }
+      : px(L(0));
+
+
+  const headWidth=
+    earL&&earR
+      ? Math.max(
+          25,
+          Math.hypot(
+            px(earR).x-px(earL).x,
+            px(earR).y-px(earL).y
+          )*1.55
+        )
+      : W*.08;
+
+
+  const headRotation=
+    earL&&earR
+      ? Math.atan2(
+          px(earR).y-px(earL).y,
+          px(earR).x-px(earL).x
+        )
+      : 0;
+
+
+  drawSkull(
+    head,
+    headWidth,
+    headWidth*1.20,
+    headRotation,
+    MAIN,
+    DETAIL
+  );
+
+
+  /*
+     -------------------------------------------------------
+     SHOULDERS
+  */
+
+  const LS=px(L(11));
+  const RS=px(L(12));
+
+  const shoulderMid={
+    x:(LS.x+RS.x)/2,
+    y:(LS.y+RS.y)/2
+  };
+
+
+  line(
+    LS,
+    shoulderMid,
+    4,
+    MAIN
+  );
+
+  line(
+    shoulderMid,
+    RS,
+    4,
+    MAIN
+  );
+
+
+  /*
+     -------------------------------------------------------
+     CLAVICLES
+  */
+
+  const neckBase=
+    lerp2(
+      head,
+      shoulderMid,
+      .78
+    );
+
+
+  line(
+    LS,
+    neckBase,
+    2,
+    DETAIL
+  );
+
+  line(
+    neckBase,
+    RS,
+    2,
+    DETAIL
+  );
+
+
+  /*
+     -------------------------------------------------------
+     SPINE
+  */
+
+  const spine=[];
+
+  for(let i=0;i<24;i++){
+
+    const t=i/23;
+
+    const source=
+      interpolateLandmark(
+        11,
+        23,
+        t
+      );
+
+    if(source){
+
+      spine.push(
+        px(source)
+      );
+
+    }
+
+  }
+
+
+  polyline(
+    spine,
+    3,
+    MAIN
+  );
+
+
+  /*
+     -------------------------------------------------------
+     VERTEBRA DETAIL
+  */
+
+  spine.forEach(
+    (p,i)=>{
+
+      circle(
+        p,
+        Math.max(
+          2,
+          W*.002
+        ),
+        "rgba(240,253,255,.78)",
+        DETAIL,
+        .7
+      );
+
+    }
+  );
+
+
+  /*
+     -------------------------------------------------------
+     RIB CAGE
+  */
+
+  const chestTop=
+    px(
+      L(11)
+    );
+
+  const chestBottom=
+    interpolate2(
+      px(L(11)),
+      px(L(23)),
+      .48
+    );
+
+
+  const chestCenter={
+    x:(LS.x+RS.x)/2,
+    y:(chestTop.y+chestBottom.y)/2
+  };
+
+
+  const chestWidth=
+    Math.hypot(
+      RS.x-LS.x,
+      RS.y-LS.y
+    )*.50;
+
+
+  for(let i=0;i<12;i++){
+
+    const t=i/11;
+
+    const y=
+      chestTop.y+
+      (
+        chestBottom.y-
+        chestTop.y
+      )*t;
+
+
+    const half=
+      chestWidth*
+      (
+        .95-
+        .30*t
+      );
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      chestCenter.x-half,
+      y
+    );
+
+    ctx.quadraticCurveTo(
+      chestCenter.x,
+      y+W*.025,
+      chestCenter.x+half,
+      y
+    );
+
+    ctx.strokeStyle=DETAIL;
+
+    ctx.lineWidth=
+      Math.max(
+        1,
+        W*.0022
+      );
+
+    ctx.stroke();
+
+  }
+
+
+  /*
+     -------------------------------------------------------
+     STERNUM
+  */
+
+  const sternumTop=
+    interpolate2(
+      LS,
+      RS,
+      .50
+    );
+
+  const sternumBottom=
+    interpolate2(
+      px(L(23)),
+      px(L(24)),
+      .50
+    );
+
+  line(
+    sternumTop,
+    interpolate2(
+      sternumTop,
+      sternumBottom,
+      .72
+    ),
+    5,
+    MAIN
+  );
+
+
+  /*
+     -------------------------------------------------------
+     SCAPULAE
+  */
+
+  drawScapula(
+    LS,
+    -1,
+    Math.hypot(
+      RS.x-LS.x,
+      RS.y-LS.y
+    ),
+    DETAIL
+  );
+
+  drawScapula(
+    RS,
+    1,
+    Math.hypot(
+      RS.x-LS.x,
+      RS.y-LS.y
+    ),
+    DETAIL
+  );
+
+
+  /*
+     -------------------------------------------------------
+     ARMS
+  */
+
+  drawLimb(
+    11,
+    13,
+    15,
+    7,
+    MAIN,
+    DETAIL
+  );
+
+  drawLimb(
+    12,
+    14,
+    16,
+    7,
+    MAIN,
+    DETAIL
+  );
+
+
+  /*
+     -------------------------------------------------------
+     PELVIS
+  */
+
+  drawPelvis(
+    MAIN,
+    DETAIL
+  );
+
+
+  /*
+     -------------------------------------------------------
+     FEMURS
+  */
+
+  drawFemur(
+    23,
+    25,
+    MAIN,
+    DETAIL
+  );
+
+  drawFemur(
+    24,
+    26,
+    MAIN,
+    DETAIL
+  );
+
+
+  /*
+     -------------------------------------------------------
+     LOWER LEGS
+  */
+
+  drawLowerLeg(
+    25,
+    27,
+    MAIN,
+    DETAIL
+  );
+
+  drawLowerLeg(
+    26,
+    28,
+    MAIN,
+    DETAIL
+  );
+
+
+  /*
+     -------------------------------------------------------
+     FEET
+  */
+
+  drawFoot(
+    27,
+    29,
+    31,
+    DETAIL
+  );
+
+  drawFoot(
+    28,
+    30,
+    32,
+    DETAIL
+  );
+
+
+  ctx.restore();
+
+}
+
+
+/* =========================================================
+   SCAPULA
+========================================================= */
+
+function drawScapula(
+  shoulder,
+  side,
+  scale,
+  color
+){
+
+  if(!shoulder)return;
+
+  const cx=
+    shoulder.x+
+    side*scale*.09;
+
+  const cy=
+    shoulder.y+
+    scale*.12;
+
+
+  const pts=[
+
+    {
+      x:cx,
+      y:cy-scale*.20
+    },
+
+    {
+      x:cx+
+        side*scale*.15,
+      y:cy
+    },
+
+    {
+      x:cx+
+        side*scale*.06,
+      y:cy+scale*.20
+    },
+
+    {
+      x:cx-
+        side*scale*.08,
+      y:cy+scale*.08
+    }
+
+  ];
+
 
   ctx.beginPath();
 
@@ -478,514 +1569,110 @@ function polygon(
 
   ctx.closePath();
 
-  ctx.fillStyle=fill;
+  ctx.fillStyle=
+    "rgba(50,220,245,.025)";
+
   ctx.fill();
 
-  if(stroke){
+  ctx.strokeStyle=color;
+  ctx.lineWidth=1.2;
 
-    ctx.lineWidth=width;
-    ctx.strokeStyle=stroke;
-    ctx.stroke();
-
-  }
+  ctx.stroke();
 
 }
 
 
 /* =========================================================
-   ANATOMICAL BONE
+   LIMB
 ========================================================= */
 
-function bone(
-  a,
-  b,
-  r1,
-  r2,
-  fill,
-  stroke
+function drawLimb(
+  shoulder,
+  elbow,
+  wrist,
+  hand,
+  main,
+  detail
 ){
 
-  const u=unit(a,b);
-  const n=perp(u);
+  const A=L(shoulder);
+  const B=L(elbow);
+  const C=L(wrist);
 
-  const p1=add(a,n,r1);
-  const p2=add(b,n,r2);
-  const p3=add(b,n,-r2);
-  const p4=add(a,n,-r1);
+  if(!A||!B||!C)return;
 
-  polygon(
-    [p1,p2,p3,p4],
-    fill,
-    stroke,
-    1
-  );
+  const a=px(A);
+  const b=px(B);
+  const c=px(C);
 
-  circle(
+
+  const width=
+    Math.max(
+      5,
+      Math.hypot(
+        b.x-a.x,
+        b.y-a.y
+      )*.075
+    );
+
+
+  bone(
     a,
-    r1,
-    fill,
-    stroke,
-    .7
+    b,
+    width,
+    main,
+    detail
   );
+
+
+  /*
+     radius / ulna
+  */
+
+  const dx=c.x-b.x;
+  const dy=c.y-b.y;
+
+  const d=
+    Math.hypot(dx,dy)||1;
+
+  const nx=-dy/d;
+  const ny=dx/d;
+
+  const off=width*.42;
+
+
+  line(
+    {
+      x:b.x+nx*off,
+      y:b.y+ny*off
+    },
+    {
+      x:c.x+nx*off*.62,
+      y:c.y+ny*off*.62
+    },
+    Math.max(1.5,width*.28),
+    detail
+  );
+
+
+  line(
+    {
+      x:b.x-nx*off,
+      y:b.y-ny*off
+    },
+    {
+      x:c.x-nx*off*.62,
+      y:c.y-ny*off*.62
+    },
+    Math.max(1.2,width*.22),
+    detail
+  );
+
 
   circle(
     b,
-    r2,
-    fill,
-    stroke,
-    .7
-  );
-
-}
-
-
-/* =========================================================
-   VERTEBRA
-========================================================= */
-
-function vertebra(
-  p,
-  size,
-  axis,
-  main,
-  detail
-){
-
-  const n=perp(axis);
-
-  const top=add(
-    p,
-    axis,
-    -size*.75
-  );
-
-  const bottom=add(
-    p,
-    axis,
-    size*.75
-  );
-
-  const left=add(
-    p,
-    n,
-    -size
-  );
-
-  const right=add(
-    p,
-    n,
-    size
-  );
-
-  polygon(
-    [
-      left,
-      top,
-      right,
-      bottom
-    ],
-    "rgba(240,253,255,.82)",
-    detail,
-    1
-  );
-
-}
-
-
-/* =========================================================
-   SKULL
-========================================================= */
-
-function skull(
-  center,
-  width,
-  height,
-  rotation,
-  main,
-  detail
-){
-
-  ctx.save();
-
-  ctx.translate(
-    center.x,
-    center.y
-  );
-
-  ctx.rotate(rotation);
-
-
-  /* cranial vault */
-
-  ctx.beginPath();
-
-  ctx.ellipse(
-    0,
-    -height*.08,
-    width*.49,
-    height*.47,
-    0,
-    0,
-    Math.PI*2
-  );
-
-  ctx.fillStyle=
-    "rgba(230,250,255,.035)";
-
-  ctx.fill();
-
-  ctx.lineWidth=2;
-  ctx.strokeStyle=main;
-  ctx.stroke();
-
-
-  /* frontal contour */
-
-  ctx.beginPath();
-
-  ctx.arc(
-    0,
-    -height*.05,
-    width*.34,
-    Math.PI,
-    Math.PI*2
-  );
-
-  ctx.strokeStyle=detail;
-  ctx.lineWidth=1;
-  ctx.stroke();
-
-
-  /* eye sockets */
-
-  for(const x of [-.17,.17]){
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-      width*x,
-      -height*.015,
-      width*.105,
-      height*.075,
-      0,
-      0,
-      Math.PI*2
-    );
-
-    ctx.strokeStyle=detail;
-    ctx.lineWidth=1.2;
-    ctx.stroke();
-
-  }
-
-
-  /* nasal cavity */
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    0,
-    -height*.01
-  );
-
-  ctx.lineTo(
-    -width*.045,
-    height*.18
-  );
-
-  ctx.lineTo(
-    width*.045,
-    height*.18
-  );
-
-  ctx.closePath();
-
-  ctx.strokeStyle=detail;
-  ctx.stroke();
-
-
-  /* maxilla */
-
-  ctx.beginPath();
-
-  ctx.arc(
-    0,
-    height*.10,
-    width*.25,
-    0,
-    Math.PI
-  );
-
-  ctx.stroke();
-
-
-  /* mandible */
-
-  ctx.beginPath();
-
-  ctx.arc(
-    0,
-    height*.12,
-    width*.30,
-    0,
-    Math.PI
-  );
-
-  ctx.stroke();
-
-
-  ctx.restore();
-
-}
-
-
-/* =========================================================
-   CLAVICLES
-========================================================= */
-
-function clavicle(
-  shoulder,
-  center,
-  width,
-  side,
-  color
-){
-
-  const u=unit(
-    shoulder,
-    center
-  );
-
-  const n=perp(u);
-
-  const start=add(
-    shoulder,
-    u,
-    width*.015
-  );
-
-  const end=add(
-    center,
-    u,
-    -width*.055
-  );
-
-  const bend=add(
-    mid(start,end),
-    n,
-    side*width*.055
-  );
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    start.x,
-    start.y
-  );
-
-  ctx.quadraticCurveTo(
-    bend.x,
-    bend.y,
-    end.x,
-    end.y
-  );
-
-  ctx.lineWidth=
-    Math.max(
-      2,
-      width*.018
-    );
-
-  ctx.strokeStyle=color;
-
-  ctx.stroke();
-
-}
-
-
-/* =========================================================
-   SCAPULA
-========================================================= */
-
-function scapula(
-  shoulder,
-  width,
-  side,
-  color
-){
-
-  const cx=
-    shoulder.x+
-    side*width*.105;
-
-  const cy=
-    shoulder.y+
-    width*.15;
-
-  const p1={
-    x:cx,
-    y:cy-width*.23
-  };
-
-  const p2={
-    x:cx+side*width*.16,
-    y:cy-width*.02
-  };
-
-  const p3={
-    x:cx+side*width*.06,
-    y:cy+width*.23
-  };
-
-  const p4={
-    x:cx-side*width*.08,
-    y:cy+width*.08
-  };
-
-  polygon(
-    [p1,p2,p3,p4],
-    "rgba(70,225,245,.025)",
-    color,
-    1.3
-  );
-
-  line(
-    p1,
-    p3,
-    1,
-    color
-  );
-
-}
-
-
-/* =========================================================
-   RIB
-========================================================= */
-
-function rib(
-  center,
-  width,
-  height,
-  axis,
-  color
-){
-
-  const n=perp(axis);
-
-  const left=
-    add(
-      center,
-      n,
-      -width
-    );
-
-  const right=
-    add(
-      center,
-      n,
-      width
-    );
-
-  const top=
-    add(
-      center,
-      axis,
-      -height
-    );
-
-  const bottom=
-    add(
-      center,
-      axis,
-      height*.15
-    );
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    left.x,
-    left.y
-  );
-
-  ctx.quadraticCurveTo(
-    top.x,
-    top.y,
-    right.x,
-    right.y
-  );
-
-  ctx.quadraticCurveTo(
-    center.x,
-    bottom.y,
-    left.x,
-    left.y
-  );
-
-  ctx.strokeStyle=color;
-
-  ctx.lineWidth=
-    Math.max(
-      1,
-      width*.018
-    );
-
-  ctx.stroke();
-
-}
-
-
-/* =========================================================
-   STERNUM
-========================================================= */
-
-function sternum(
-  top,
-  bottom,
-  width,
-  main,
-  detail
-){
-
-  const axis=
-    unit(
-      top,
-      bottom
-    );
-
-  const n=perp(axis);
-
-  const midPoint=
-    lerp(
-      top,
-      bottom,
-      .45
-    );
-
-  const upper=
-    add(
-      midPoint,
-      n,
-      width*.32
-    );
-
-  const lower=
-    add(
-      midPoint,
-      n,
-      -width*.32
-    );
-
-  polygon(
-    [
-      add(top,n,-width*.55),
-      upper,
-      add(bottom,n,width*.30),
-      add(bottom,axis,width*.05),
-      add(bottom,n,-width*.30),
-      lower
-    ],
-    "rgba(242,253,255,.85)",
+    width*.48,
+    "rgba(240,253,255,.78)",
     detail,
     1
   );
@@ -997,244 +1684,207 @@ function sternum(
    PELVIS
 ========================================================= */
 
-function pelvis(
-  L,
-  R,
-  axis,
+function drawPelvis(
   main,
   detail
 ){
 
-  const width=
-    dist(
-      L,
-      R
-    );
+  const LHip=px(L(23));
+  const RHip=px(L(24));
 
-  const center=
-    mid(L,R);
-
-  const side=
-    perp(axis);
+  if(!LHip||!RHip)return;
 
 
-  const topL=
-    add(
-      L,
-      axis,
-      -width*.25
-    );
+  const cx=
+    (LHip.x+RHip.x)/2;
 
-  const topR=
-    add(
-      R,
-      axis,
-      -width*.25
+  const cy=
+    (LHip.y+RHip.y)/2;
+
+
+  const w=
+    Math.hypot(
+      RHip.x-LHip.x,
+      RHip.y-LHip.y
     );
 
 
-  const lowL=
-    add(
-      L,
-      axis,
-      width*.22
-    );
+  const topY=
+    cy-w*.22;
 
-  const lowR=
-    add(
-      R,
-      axis,
-      width*.22
-    );
+  const lowY=
+    cy+w*.25;
 
 
-  /* iliac crests */
+  /*
+     Iliac crests
+  */
 
   ctx.beginPath();
 
   ctx.moveTo(
-    topL.x,
-    topL.y
+    LHip.x,
+    cy
   );
 
   ctx.quadraticCurveTo(
-    L.x-side.x*width*.08,
-    L.y-side.y*width*.08,
-    lowL.x,
-    lowL.y
+    LHip.x-w*.10,
+    topY,
+    cx,
+    topY
+  );
+
+  ctx.quadraticCurveTo(
+    RHip.x+w*.10,
+    topY,
+    RHip.x,
+    cy
   );
 
   ctx.strokeStyle=main;
   ctx.lineWidth=
     Math.max(
       2,
-      width*.017
+      w*.025
     );
 
   ctx.stroke();
 
 
-  ctx.beginPath();
-
-  ctx.moveTo(
-    topR.x,
-    topR.y
-  );
-
-  ctx.quadraticCurveTo(
-    R.x+side.x*width*.08,
-    R.y+side.y*width*.08,
-    lowR.x,
-    lowR.y
-  );
-
-  ctx.stroke();
-
-
-  /* pelvic brim */
-
-  line(
-    topL,
-    topR,
-    Math.max(
-      2,
-      width*.014
-    ),
-    main
-  );
-
-
-  /* acetabulum */
-
-  for(const hip of [L,R]){
-
-    circle(
-      hip,
-      width*.105,
-      "rgba(80,230,250,.025)",
-      detail,
-      Math.max(
-        1,
-        width*.009
-      )
-    );
-
-  }
-
-
-  /* sacrum */
-
-  const sacrumTop=
-    add(
-      center,
-      axis,
-      -width*.08
-    );
-
-  const sacrumBottom=
-    add(
-      center,
-      axis,
-      width*.29
-    );
-
-  const sw=
-    width*.17;
-
-  polygon(
-    [
-      add(sacrumTop,side,-sw),
-      add(sacrumTop,side,sw),
-      add(sacrumBottom,side,sw*.54),
-      add(sacrumBottom,side,-sw*.54)
-    ],
-    "rgba(235,253,255,.50)",
-    detail,
-    1
-  );
-
-
-  /* pubic symphysis */
-
-  const pubic=
-    add(
-      center,
-      axis,
-      width*.32
-    );
-
-
-  /* pubic rami */
-
-  line(
-    lowL,
-    pubic,
-    Math.max(
-      1.5,
-      width*.012
-    ),
-    detail
-  );
-
-  line(
-    lowR,
-    pubic,
-    Math.max(
-      1.5,
-      width*.012
-    ),
-    detail
-  );
-
-
-  /* pubic arch */
-
-  const pL=
-    add(
-      pubic,
-      side,
-      -width*.11
-    );
-
-  const pR=
-    add(
-      pubic,
-      side,
-      width*.11
-    );
+  /*
+     pelvic ring
+  */
 
   ctx.beginPath();
 
   ctx.moveTo(
-    pL.x,
-    pL.y
+    LHip.x,
+    cy
   );
 
   ctx.quadraticCurveTo(
-    pubic.x,
-    pubic.y+width*.11,
-    pR.x,
-    pR.y
+    cx,
+    lowY,
+    RHip.x,
+    cy
   );
 
   ctx.strokeStyle=detail;
-
   ctx.lineWidth=
     Math.max(
-      1,
-      width*.010
+      1.5,
+      w*.017
     );
 
   ctx.stroke();
 
 
-  /* pubic symphysis marker */
+  /*
+     acetabulum
+  */
+
+  circle(
+    LHip,
+    w*.095,
+    "rgba(45,220,245,.025)",
+    detail,
+    Math.max(1,w*.009)
+  );
+
+  circle(
+    RHip,
+    w*.095,
+    "rgba(45,220,245,.025)",
+    detail,
+    Math.max(1,w*.009)
+  );
+
+
+  /*
+     sacrum
+  */
+
+  const sacrumTop={
+    x:cx,
+    y:topY+w*.06
+  };
+
+  const sacrumBottom={
+    x:cx,
+    y:lowY-w*.04
+  };
+
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    sacrumTop.x-w*.10,
+    sacrumTop.y
+  );
+
+  ctx.lineTo(
+    sacrumTop.x+w*.10,
+    sacrumTop.y
+  );
+
+  ctx.lineTo(
+    sacrumBottom.x+w*.055,
+    sacrumBottom.y
+  );
+
+  ctx.lineTo(
+    sacrumBottom.x-w*.055,
+    sacrumBottom.y
+  );
+
+  ctx.closePath();
+
+  ctx.fillStyle=
+    "rgba(238,252,255,.42)";
+
+  ctx.fill();
+
+  ctx.strokeStyle=detail;
+  ctx.stroke();
+
+
+  /*
+     pubic symphysis
+  */
+
+  const pubic={
+    x:cx,
+    y:lowY
+  };
+
+
+  line(
+    {
+      x:LHip.x+w*.12,
+      y:lowY-w*.10
+    },
+    pubic,
+    Math.max(1.5,w*.014),
+    detail
+  );
+
+
+  line(
+    {
+      x:RHip.x-w*.12,
+      y:lowY-w*.10
+    },
+    pubic,
+    Math.max(1.5,w*.014),
+    detail
+  );
+
 
   circle(
     pubic,
     Math.max(
       3,
-      width*.028
+      w*.025
     ),
     "rgba(255,255,255,.95)",
     detail,
@@ -1248,41 +1898,47 @@ function pelvis(
    FEMUR
 ========================================================= */
 
-function femur(
-  hip,
-  knee,
-  scale,
+function drawFemur(
+  hipIndex,
+  kneeIndex,
   main,
   detail
 ){
 
+  const hip=L(hipIndex);
+  const knee=L(kneeIndex);
+
   if(!hip||!knee)return;
 
+  const A=px(hip);
+  const B=px(knee);
 
-  const u=
-    unit(
-      hip,
-      knee
+
+  const dx=B.x-A.x;
+  const dy=B.y-A.y;
+
+  const d=
+    Math.hypot(dx,dy)||1;
+
+
+  const nx=-dy/d;
+  const ny=dx/d;
+
+
+  const r=
+    Math.max(
+      5,
+      d*.065
     );
-
-  const n=
-    perp(u);
 
 
   /*
      femoral head
   */
 
-  const head=
-    add(
-      hip,
-      n,
-      scale*.045
-    );
-
   circle(
-    head,
-    scale*.058,
+    A,
+    r*1.10,
     "rgba(240,253,255,.90)",
     detail,
     1
@@ -1293,19 +1949,22 @@ function femur(
      femoral neck
   */
 
-  const neck=
-    add(
-      hip,
-      u,
-      scale*.15
-    );
+  const neck={
+    x:A.x+
+      dx*.13+
+      nx*r*.30,
+
+    y:A.y+
+      dy*.13+
+      ny*r*.30
+  };
+
 
   bone(
-    head,
+    A,
     neck,
-    scale*.035,
-    scale*.045,
-    "rgba(238,253,255,.88)",
+    r*.52,
+    main,
     detail
   );
 
@@ -1316,75 +1975,23 @@ function femur(
 
   bone(
     neck,
-    knee,
-    scale*.052,
-    scale*.034,
-    "rgba(238,253,255,.94)",
+    B,
+    r,
+    main,
     detail
   );
 
 
   /*
-     distal condyles
+     condyles
   */
 
-  const condyleRadius=
-    scale*.038;
-
   circle(
-    knee,
-    condyleRadius,
-    "rgba(240,253,255,.85)",
+    B,
+    r*.72,
+    "rgba(240,253,255,.80)",
     detail,
     1
-  );
-
-}
-
-
-/* =========================================================
-   FOREARM
-========================================================= */
-
-function forearm(
-  elbow,
-  wrist,
-  scale,
-  detail
-){
-
-  if(!elbow||!wrist)return;
-
-  const u=
-    unit(
-      elbow,
-      wrist
-    );
-
-  const n=
-    perp(u);
-
-  const off=
-    scale*.022;
-
-
-  bone(
-    add(elbow,n,-off),
-    add(wrist,n,-off*.62),
-    scale*.020,
-    scale*.010,
-    "rgba(238,253,255,.90)",
-    detail
-  );
-
-
-  bone(
-    add(elbow,n,off),
-    add(wrist,n,off*.62),
-    scale*.016,
-    scale*.009,
-    "rgba(238,253,255,.90)",
-    detail
   );
 
 }
@@ -1394,45 +2001,72 @@ function forearm(
    LOWER LEG
 ========================================================= */
 
-function lowerLeg(
-  knee,
-  ankle,
-  scale,
+function drawLowerLeg(
+  kneeIndex,
+  ankleIndex,
+  main,
   detail
 ){
 
+  const knee=L(kneeIndex);
+  const ankle=L(ankleIndex);
+
   if(!knee||!ankle)return;
 
-  const u=
-    unit(
-      knee,
-      ankle
-    );
+  const A=px(knee);
+  const B=px(ankle);
 
-  const n=
-    perp(u);
+
+  const dx=B.x-A.x;
+  const dy=B.y-A.y;
+
+  const d=
+    Math.hypot(dx,dy)||1;
+
+  const nx=-dy/d;
+  const ny=dx/d;
 
   const off=
-    scale*.022;
+    Math.max(
+      3,
+      d*.022
+    );
 
 
-  bone(
-    add(knee,n,-off),
-    add(ankle,n,-off*.62),
-    scale*.024,
-    scale*.013,
-    "rgba(238,253,255,.90)",
+  line(
+    {
+      x:A.x+nx*off,
+      y:A.y+ny*off
+    },
+    {
+      x:B.x+nx*off*.60,
+      y:B.y+ny*off*.60
+    },
+    Math.max(2,d*.018),
+    main
+  );
+
+
+  line(
+    {
+      x:A.x-nx*off,
+      y:A.y-ny*off
+    },
+    {
+      x:B.x-nx*off*.60,
+      y:B.y-ny*off*.60
+    },
+    Math.max(1.3,d*.009),
     detail
   );
 
 
-  bone(
-    add(knee,n,off),
-    add(ankle,n,off*.62),
-    scale*.013,
-    scale*.008,
-    "rgba(238,253,255,.88)",
-    detail
+  circle(
+    A,
+    d*.035,
+    "rgba(240,253,255,.88)",
+    detail,
+    1
   );
 
 }
@@ -1442,70 +2076,69 @@ function lowerLeg(
    FOOT
 ========================================================= */
 
-function foot(
-  ankle,
-  heel,
-  toe,
-  scale,
+function drawFoot(
+  ankleIndex,
+  heelIndex,
+  toeIndex,
   detail
 ){
 
-  if(!ankle)return;
+  const A=L(ankleIndex);
+  const Hh=L(heelIndex);
+  const T=L(toeIndex);
+
+  if(!A)return;
+
+  const ankle=px(A);
 
   const end=
-    toe||
-    heel;
+    T
+      ? px(T)
+      : Hh
+        ? px(Hh)
+        : null;
 
   if(!end)return;
 
-  const u=
-    unit(
-      ankle,
-      end
-    );
 
-  const n=
-    perp(u);
-
-  const midFoot=
-    lerp(
-      ankle,
-      end,
-      .42
-    );
-
-
-  bone(
+  line(
     ankle,
-    midFoot,
-    scale*.035,
-    scale*.024,
-    "rgba(238,253,255,.86)",
-    detail
-  );
-
-
-  bone(
-    midFoot,
     end,
-    scale*.023,
-    scale*.012,
-    "rgba(238,253,255,.86)",
+    5,
     detail
   );
+
+
+  const dx=end.x-ankle.x;
+  const dy=end.y-ankle.y;
+
+  const d=
+    Math.hypot(dx,dy)||1;
+
+  const nx=-dy/d;
+  const ny=dx/d;
 
 
   for(let i=0;i<4;i++){
 
-    const off=
-      (i-1.5)*scale*.018;
+    const t=.45+i*.10;
+
+    const p1={
+      x:ankle.x+dx*t+nx*d*.025,
+      y:ankle.y+dy*t+ny*d*.025
+    };
+
+    const p2={
+      x:ankle.x+dx*(t+.12)+nx*d*.035,
+      y:ankle.y+dy*(t+.12)+ny*d*.035
+    };
 
     line(
-      add(midFoot,n,off),
-      add(end,n,off*.72),
+      p1,
+      p2,
       Math.max(
         1,
-        scale*.006
+        d*.008
       ),
       detail
     );
@@ -1516,550 +2149,84 @@ function foot(
 
 
 /* =========================================================
-   FULL ANATOMICAL RIG
+   LANDMARK INTERPOLATION
 ========================================================= */
 
-function drawSkeleton(){
+function interpolateLandmark(
+  aIndex,
+  bIndex,
+  t
+){
 
-  const nose=P(0);
+  const A=L(aIndex);
+  const B=L(bIndex);
 
-  const earL=P(7);
-  const earR=P(8);
+  if(!A||!B)return null;
 
-  const shoulderL=P(11);
-  const shoulderR=P(12);
+  return {
+    x:A.x+(B.x-A.x)*t,
+    y:A.y+(B.y-A.y)*t,
+    z:(A.z||0)+((B.z||0)-(A.z||0))*t
+  };
 
-  const elbowL=P(13);
-  const elbowR=P(14);
+}
 
-  const wristL=P(15);
-  const wristR=P(16);
 
-  const hipL=P(23);
-  const hipR=P(24);
+function interpolate2(
+  A,
+  B,
+  t
+){
 
-  const kneeL=P(25);
-  const kneeR=P(26);
+  return {
+    x:A.x+(B.x-A.x)*t,
+    y:A.y+(B.y-A.y)*t
+  };
 
-  const ankleL=P(27);
-  const ankleR=P(28);
+}
 
-  const heelL=P(29);
-  const heelR=P(30);
 
-  const toeL=P(31);
-  const toeR=P(32);
+function lerp2(A,B,t){
 
-
-  if(
-    !shoulderL||
-    !shoulderR||
-    !hipL||
-    !hipR
-  )return;
-
-
-  const S=
-    mid(
-      shoulderL,
-      shoulderR
-    );
-
-  const G=
-    mid(
-      hipL,
-      hipR
-    );
-
-
-  const shoulderWidth=
-    dist(
-      shoulderL,
-      shoulderR
-    );
-
-  const hipWidth=
-    dist(
-      hipL,
-      hipR
-    );
-
-
-  const torsoLength=
-    dist(
-      S,
-      G
-    );
-
-
-  const axis=
-    unit(
-      S,
-      G
-    );
-
-
-  const MAIN=
-    "rgba(242,253,255,.97)";
-
-  const DETAIL=
-    "rgba(55,225,245,.88)";
-
-
-  ctx.save();
-
-  ctx.globalAlpha=
-    Number(
-      $("boneOpacity").value
-    )/100;
-
-  ctx.shadowBlur=5;
-
-  ctx.shadowColor=
-    "rgba(60,225,255,.55)";
-
-
-  /* =======================================================
-     SKULL
-  ======================================================= */
-
-  let headCenter;
-
-  if(earL&&earR){
-
-    headCenter=
-      mid(
-        earL,
-        earR
-      );
-
-  }
-  else if(nose){
-
-    headCenter={
-      x:nose.x,
-      y:nose.y-
-        shoulderWidth*.10
-    };
-
-  }
-  else{
-
-    headCenter={
-      x:S.x,
-      y:S.y-
-        shoulderWidth*.30
-    };
-
-  }
-
-
-  const headWidth=
-    earL&&earR
-      ? dist(earL,earR)*1.55
-      : shoulderWidth*.25;
-
-
-  skull(
-    headCenter,
-    headWidth,
-    headWidth*1.22,
-    earL&&earR
-      ? Math.atan2(
-          earR.y-earL.y,
-          earR.x-earL.x
-        )
-      : 0,
-    MAIN,
-    DETAIL
-  );
-
-
-  /* =======================================================
-     CERVICAL SPINE
-  ======================================================= */
-
-  const neckTop=
-    add(
-      headCenter,
-      axis,
-      headWidth*.47
-    );
-
-  const neckBottom=
-    lerp(
-      S,
-      G,
-      .08
-    );
-
-
-  for(let i=0;i<7;i++){
-
-    vertebra(
-      lerp(
-        neckTop,
-        neckBottom,
-        i/6
-      ),
-      shoulderWidth*.022,
-      axis,
-      MAIN,
-      DETAIL
-    );
-
-  }
-
-
-  /* =======================================================
-     CLAVICLES
-  ======================================================= */
-
-  clavicle(
-    shoulderL,
-    S,
-    shoulderWidth,
-    -1,
-    MAIN
-  );
-
-  clavicle(
-    shoulderR,
-    S,
-    shoulderWidth,
-    1,
-    MAIN
-  );
-
-
-  /* =======================================================
-     SCAPULAE
-  ======================================================= */
-
-  scapula(
-    shoulderL,
-    shoulderWidth,
-    -1,
-    DETAIL
-  );
-
-  scapula(
-    shoulderR,
-    shoulderWidth,
-    1,
-    DETAIL
-  );
-
-
-  /* =======================================================
-     THORACIC / LUMBAR SPINE
-  ======================================================= */
-
-  const spineTop=
-    lerp(
-      S,
-      G,
-      .09
-    );
-
-  const spineBottom=
-    lerp(
-      S,
-      G,
-      .98
-    );
-
-
-  for(let i=0;i<20;i++){
-
-    const t=i/19;
-
-    vertebra(
-      lerp(
-        spineTop,
-        spineBottom,
-        t
-      ),
-      shoulderWidth*
-      (
-        .024-
-        .007*t
-      ),
-      axis,
-      MAIN,
-      DETAIL
-    );
-
-  }
-
-
-  /* =======================================================
-     RIB CAGE
-  ======================================================= */
-
-  const ribTop=
-    lerp(
-      S,
-      G,
-      .12
-    );
-
-  const ribBottom=
-    lerp(
-      S,
-      G,
-      .60
-    );
-
-
-  for(let i=0;i<12;i++){
-
-    const t=i/11;
-
-    rib(
-      lerp(
-        ribTop,
-        ribBottom,
-        t
-      ),
-      shoulderWidth*
-      (
-        .36-
-        .085*t
-      ),
-      torsoLength*
-      (
-        .032-
-        .004*t
-      ),
-      axis,
-      DETAIL
-    );
-
-  }
-
-
-  /* =======================================================
-     STERNUM
-  ======================================================= */
-
-  sternum(
-    ribTop,
-    ribBottom,
-    shoulderWidth*.20,
-    MAIN,
-    DETAIL
-  );
-
-
-  /* =======================================================
-     ARMS
-  ======================================================= */
-
-  if(elbowL){
-
-    bone(
-      shoulderL,
-      elbowL,
-      shoulderWidth*.046,
-      shoulderWidth*.030,
-      "rgba(240,253,255,.94)",
-      DETAIL
-    );
-
-  }
-
-  if(elbowR){
-
-    bone(
-      shoulderR,
-      elbowR,
-      shoulderWidth*.046,
-      shoulderWidth*.030,
-      "rgba(240,253,255,.94)",
-      DETAIL
-    );
-
-  }
-
-
-  forearm(
-    elbowL,
-    wristL,
-    shoulderWidth,
-    DETAIL
-  );
-
-  forearm(
-    elbowR,
-    wristR,
-    shoulderWidth,
-    DETAIL
-  );
-
-
-  /* =======================================================
-     PELVIS
-  ======================================================= */
-
-  pelvis(
-    hipL,
-    hipR,
-    axis,
-    MAIN,
-    DETAIL
-  );
-
-
-  /* =======================================================
-     FEMURS
-  ======================================================= */
-
-  femur(
-    hipL,
-    kneeL,
-    hipWidth,
-    MAIN,
-    DETAIL
-  );
-
-  femur(
-    hipR,
-    kneeR,
-    hipWidth,
-    MAIN,
-    DETAIL
-  );
-
-
-  /* =======================================================
-     PATELLA
-  ======================================================= */
-
-  if(kneeL){
-
-    circle(
-      kneeL,
-      hipWidth*.040,
-      "rgba(240,253,255,.88)",
-      DETAIL,
-      1
-    );
-
-  }
-
-  if(kneeR){
-
-    circle(
-      kneeR,
-      hipWidth*.040,
-      "rgba(240,253,255,.88)",
-      DETAIL,
-      1
-    );
-
-  }
-
-
-  /* =======================================================
-     LOWER LEGS
-  ======================================================= */
-
-  lowerLeg(
-    kneeL,
-    ankleL,
-    hipWidth,
-    DETAIL
-  );
-
-  lowerLeg(
-    kneeR,
-    ankleR,
-    hipWidth,
-    DETAIL
-  );
-
-
-  /* =======================================================
-     FEET
-  ======================================================= */
-
-  foot(
-    ankleL,
-    heelL,
-    toeL,
-    hipWidth,
-    DETAIL
-  );
-
-  foot(
-    ankleR,
-    heelR,
-    toeR,
-    hipWidth,
-    DETAIL
-  );
-
-
-  /* =======================================================
-     WRIST / HAND REFERENCE
-  ======================================================= */
-
-  if(wristL){
-
-    circle(
-      wristL,
-      shoulderWidth*.022,
-      "rgba(238,253,255,.70)",
-      DETAIL,
-      1
-    );
-
-  }
-
-  if(wristR){
-
-    circle(
-      wristR,
-      shoulderWidth*.022,
-      "rgba(238,253,255,.70)",
-      DETAIL,
-      1
-    );
-
-  }
-
-
-  ctx.restore();
+  return {
+    x:A.x+(B.x-A.x)*t,
+    y:A.y+(B.y-A.y)*t
+  };
 
 }
 
 
 /* =========================================================
-   RAW LANDMARKS
+   DETECTION POINTS
 ========================================================= */
 
 function drawPoints(){
 
-  if(!landmarks)return;
+  if(!pose2D)return;
 
   ctx.save();
 
-  landmarks.forEach(p=>{
+  pose2D.forEach(p=>{
 
-    const v=p.v??1;
+    const q=px(p);
 
-    if(v<.30)return;
+    const v=
+      p.visibility ??
+      1;
+
+
+    if(v<.3)return;
+
 
     circle(
-      p,
+      q,
       Math.max(
         3,
         W*.0025
       ),
-      v>=.70
-        ? "rgba(255,70,90,.95)"
-        : "rgba(255,205,70,.95)"
+      v>=.7
+        ? "rgba(255,65,85,.95)"
+        : "rgba(255,200,60,.95)"
     );
 
   });
@@ -2070,12 +2237,10 @@ function drawPoints(){
 
 
 /* =========================================================
-   DRAW
+   RENDER
 ========================================================= */
 
-function draw(){
-
-  if(!W)return;
+function render(){
 
   ctx.clearRect(
     0,
@@ -2085,7 +2250,7 @@ function draw(){
   );
 
 
-  if(!landmarks){
+  if(!pose2D){
 
     img.style.opacity=1;
 
@@ -2094,29 +2259,36 @@ function draw(){
   }
 
 
-  if(displayMode==="original"){
+  if(mode==="original"){
 
     img.style.opacity=1;
 
   }
-  else if(displayMode==="bone"){
-
-    img.style.opacity=0;
-
-  }
-  else{
+  else if(mode==="rig"){
 
     img.style.opacity=
       Number(
         $("photoOpacity").value
       )/100;
 
+    draw3DRig();
+
   }
+  else if(mode==="xr"){
 
+    img.style.opacity=
+      Number(
+        $("photoOpacity").value
+      )/100;
 
-  if(displayMode!=="original"){
+    draw3DRig();
 
-    drawSkeleton();
+  }
+  else{
+
+    img.style.opacity=0;
+
+    draw3DRig();
 
   }
 
@@ -2131,12 +2303,12 @@ function draw(){
 
 
 /* =========================================================
-   RESIZE
+   CANVAS SIZE
 ========================================================= */
 
-function resizeCanvas(){
+function resize(){
 
-  if(!W)return;
+  if(!W||!H)return;
 
   canvas.width=W;
   canvas.height=H;
@@ -2147,13 +2319,13 @@ function resizeCanvas(){
   canvas.style.height=
     img.clientHeight+"px";
 
-  draw();
+  render();
 
 }
 
 
 new ResizeObserver(
-  resizeCanvas
+  resize
 ).observe(img);
 
 
@@ -2166,91 +2338,65 @@ async function loadMediaPipe(){
   if(detector)return detector;
 
 
-  if(loading){
-
-    while(loading){
-
-      await new Promise(
-        r=>setTimeout(r,100)
-      );
-
-    }
-
-    return detector;
-
-  }
+  status(
+    "正在加载 MediaPipe……\n首次加载可能需要一点时间。"
+  );
 
 
-  loading=true;
+  const {
+
+    PoseLandmarker,
+    FilesetResolver
+
+  }=await import(
+    "https://unpkg.com/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs"
+  );
 
 
-  try{
-
-    setStatus(
-      "正在加载 MediaPipe……\n首次加载可能需要一点时间。"
+  const vision=
+    await FilesetResolver.forVisionTasks(
+      "https://unpkg.com/@mediapipe/tasks-vision@0.10.21/wasm"
     );
 
 
-    const {
-      PoseLandmarker,
-      FilesetResolver
-    }=
-      await import(
-        "https://unpkg.com/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs"
-      );
+  detector=
+    await PoseLandmarker.createFromOptions(
+      vision,
+      {
+
+        baseOptions:{
+          modelAssetPath:
+            "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
+        },
+
+        runningMode:"IMAGE",
+
+        numPoses:1,
+
+        minPoseDetectionConfidence:.5,
+
+        minPosePresenceConfidence:.5,
+
+        minTrackingConfidence:.5
+
+      }
+    );
 
 
-    const vision=
-      await FilesetResolver.forVisionTasks(
-        "https://unpkg.com/@mediapipe/tasks-vision@0.10.21/wasm"
-      );
-
-
-    detector=
-      await PoseLandmarker.createFromOptions(
-        vision,
-        {
-
-          baseOptions:{
-            modelAssetPath:
-              "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
-          },
-
-          runningMode:"IMAGE",
-
-          numPoses:1,
-
-          minPoseDetectionConfidence:.5,
-
-          minPosePresenceConfidence:.5,
-
-          minTrackingConfidence:.5
-
-        }
-      );
-
-
-    return detector;
-
-  }
-  finally{
-
-    loading=false;
-
-  }
+  return detector;
 
 }
 
 
 /* =========================================================
-   DETECTION
+   START DETECTION
 ========================================================= */
 
-async function detectPerson(){
+async function detect(){
 
   if(!W){
 
-    setStatus(
+    status(
       "请先打开人物图片。",
       "bad"
     );
@@ -2268,8 +2414,8 @@ async function detectPerson(){
     await loadMediaPipe();
 
 
-    setStatus(
-      "正在检测人物姿态……"
+    status(
+      "正在计算 2D + 3D 人体姿态……"
     );
 
 
@@ -2282,7 +2428,8 @@ async function detectPerson(){
       !result.landmarks.length
     ){
 
-      landmarks=null;
+      pose2D=null;
+      pose3D=null;
 
       ctx.clearRect(
         0,
@@ -2291,10 +2438,10 @@ async function detectPerson(){
         H
       );
 
-      enableResultButtons(false);
+      enableButtons(false);
 
 
-      setStatus(
+      status(
         "❌ 没有检测到人物。\n\n不生成假骨架。",
         "bad"
       );
@@ -2304,61 +2451,69 @@ async function detectPerson(){
     }
 
 
-    landmarks=
-      result.landmarks[0]
-      .map((p,i)=>({
-
-        x:p.x*W,
-        y:p.y*H,
-        z:p.z,
-        v:p.visibility??1,
-        i
-
-      }));
+    pose2D=
+      result.landmarks[0];
 
 
-    displayMode="xr";
+    /*
+       MediaPipe Pose Landmarker
+       provides worldLandmarks when available.
+    */
 
-    $("photoOpacity").value=38;
+    pose3D=
+      result.worldLandmarks &&
+      result.worldLandmarks.length
+        ? result.worldLandmarks[0]
+        : null;
 
 
-    enableResultButtons(true);
+    if(!pose3D){
+
+      status(
+        "⚠️ 检测到人物，但当前结果没有返回 3D World Landmarks。\n\n"+
+        "因此不会伪装成真正的 3D Rig。",
+        "bad"
+      );
+
+      return;
+
+    }
 
 
-    setStatus(
-`✅ 检测完成：1 人物 / 33 个姿态点
+    enableButtons(true);
 
-V5.0 解剖骨架 Rig 已建立。
+    mode="xr";
 
-现在可以观察：
 
-头骨
-胸廓
-脊柱
-骨盆
-耻骨联合
-髋关节
-股骨
-膝
-小腿
-踝
-足部`,
+    status(
+`✅ 检测完成
+
+人物：1
+2D 姿态点：33
+3D World Pose：33
+
+V6 3D Anatomical Rig 已建立。
+
+现在开始测试：
+2D 姿态
+＋
+3D人体坐标
+＋
+解剖结构投影`,
       "ok"
     );
 
 
-    draw();
+    render();
 
   }
   catch(err){
 
     console.error(err);
 
-    enableResultButtons(false);
-
-    setStatus(
+    status(
       "❌ 检测失败：\n\n"+
-      (err?.message||err),
+      (err?.message||String(err)),
       "bad"
     );
 
@@ -2373,7 +2528,7 @@ V5.0 解剖骨架 Rig 已建立。
 
 
 /* =========================================================
-   UPLOAD
+   IMAGE UPLOAD
 ========================================================= */
 
 $("file").onchange=e=>{
@@ -2401,15 +2556,22 @@ $("file").onchange=e=>{
       "none";
 
 
-    landmarks=null;
+    pose2D=null;
+    pose3D=null;
 
 
-    enableResultButtons(false);
+    enableButtons(false);
 
 
-    displayMode="original";
+    $("detect").disabled=false;
 
-    img.style.opacity=1;
+
+    mode="original";
+    showPoints=false;
+
+
+    $("points").textContent=
+      "检测点";
 
 
     ctx.clearRect(
@@ -2420,16 +2582,13 @@ $("file").onchange=e=>{
     );
 
 
-    resizeCanvas();
+    resize();
 
 
-    $("detect").disabled=false;
-
-
-    setStatus(
+    status(
 `图片已载入：${W} × ${H}
 
-原图已显示。
+原图不会自动检测。
 
 确认图片后，
 点击「开始检测」。`
@@ -2445,8 +2604,8 @@ $("file").onchange=e=>{
 
     URL.revokeObjectURL(url);
 
-    setStatus(
-      "❌ 图片读取失败，请重新选择。",
+    status(
+      "❌ 图片读取失败。",
       "bad"
     );
 
@@ -2463,38 +2622,38 @@ $("file").onchange=e=>{
 ========================================================= */
 
 $("detect").onclick=
-async()=>{
-  await detectPerson();
-};
+  detect;
 
 
 $("original").onclick=()=>{
 
-  displayMode="original";
+  mode="original";
 
   $("photoOpacity").value=100;
 
-  draw();
+  render();
 
 };
 
 
 $("xr").onclick=()=>{
 
-  displayMode="xr";
+  mode="xr";
 
-  $("photoOpacity").value=38;
+  $("photoOpacity").value=42;
 
-  draw();
+  render();
 
 };
 
 
-$("boneOnly").onclick=()=>{
+$("rig").onclick=()=>{
 
-  displayMode="bone";
+  mode="rig";
 
-  draw();
+  $("photoOpacity").value=42;
+
+  render();
 
 };
 
@@ -2505,17 +2664,22 @@ $("points").onclick=()=>{
 
   $("points").textContent=
     showPoints
-      ?"隐藏检测点"
-      :"检测点";
+      ? "隐藏检测点"
+      : "检测点";
 
-  draw();
+  render();
 
 };
 
 
-$("photoOpacity").oninput=draw;
+$("photoOpacity").oninput=
+  render;
 
-$("boneOpacity").oninput=draw;
+$("boneOpacity").oninput=
+  render;
+
+$("depth").oninput=
+  render;
 
 </script>
 
