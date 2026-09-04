@@ -2,16 +2,11 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>MediaPipe 检测点连接测试</title>
 
 <style>
-
 body{
   margin:0;
   padding:20px;
@@ -39,6 +34,7 @@ h1{
   margin:10px 0;
   background:#f7f7f7;
   border-radius:10px;
+  font-size:17px;
 }
 
 .wait{
@@ -63,7 +59,6 @@ h1{
   font-size:14px;
   line-height:1.6;
 }
-
 </style>
 </head>
 
@@ -104,15 +99,49 @@ h1{
 
 /*
 ==================================================
-MediaPipe 连接测试
+MediaPipe 基础连接测试
+V0.1
 ==================================================
+
+这一步只验证：
+
+1. Bundle
+2. WASM
+3. Pose Landmarker
+4. 33 点检测系统
+
+暂时不上传图片。
+暂时不画骨架。
+*/
+
+
+/*
+==================================================
+① MediaPipe Bundle
+==================================================
+
+这里改用 0.10.21 + UNPKG。
 */
 
 const BUNDLE_URL =
-"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs";
+"https://unpkg.com/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs";
+
+
+/*
+==================================================
+② WASM
+==================================================
+*/
 
 const WASM_URL =
-"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm";
+"https://unpkg.com/@mediapipe/tasks-vision@0.10.21/wasm";
+
+
+/*
+==================================================
+③ Pose 模型
+==================================================
+*/
 
 const MODEL_URL =
 "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
@@ -134,42 +163,53 @@ const detailEl =
 document.getElementById("detail");
 
 
-function setOK(el,text){
+function setOK(element,text){
 
-  el.className="item ok";
+  element.className =
+    "item ok";
 
-  el.textContent="✅ "+text;
-
-}
-
-
-function setError(el,text){
-
-  el.className="item error";
-
-  el.textContent="❌ "+text;
+  element.textContent =
+    "✅ " + text;
 
 }
 
 
-function setWait(el,text){
+function setError(element,text){
 
-  el.className="item wait";
+  element.className =
+    "item error";
 
-  el.textContent="⏳ "+text;
+  element.textContent =
+    "❌ " + text;
 
 }
 
 
-async function timeoutPromise(ms){
+function setWait(element,text){
+
+  element.className =
+    "item wait";
+
+  element.textContent =
+    "⏳ " + text;
+
+}
+
+
+function timeout(ms){
 
   return new Promise(
-    (_,reject)=>{
+    function(_,reject){
 
       setTimeout(
-        ()=>reject(
-          new Error("连接超时")
-        ),
+        function(){
+
+          reject(
+            new Error("连接超时")
+
+          );
+
+        },
         ms
       );
 
@@ -179,13 +219,16 @@ async function timeoutPromise(ms){
 }
 
 
-async function withTimeout(promise,ms){
+async function withTimeout(
+  promise,
+  ms
+){
 
   return Promise.race([
 
     promise,
 
-    timeoutPromise(ms)
+    timeout(ms)
 
   ]);
 
@@ -195,13 +238,15 @@ async function withTimeout(promise,ms){
 async function startTest(){
 
   let PoseLandmarker;
+
   let FilesetResolver;
 
 
   /*
-  ================================================
-  ① MediaPipe Bundle
-  ================================================
+  ==================================================
+  TEST ①
+  MediaPipe Bundle
+  ==================================================
   */
 
   try{
@@ -235,7 +280,7 @@ async function startTest(){
     ){
 
       throw new Error(
-        "Bundle 已加载，但没有找到 PoseLandmarker / FilesetResolver"
+        "Bundle 已加载，但没有找到 PoseLandmarker 或 FilesetResolver"
       );
 
     }
@@ -248,7 +293,7 @@ async function startTest(){
 
 
     detailEl.textContent =
-      "Bundle 已成功进入网页。继续测试 WASM…";
+      "① Bundle 成功。现在测试 WASM…";
 
 
   }catch(error){
@@ -260,7 +305,7 @@ async function startTest(){
 
 
     detailEl.textContent =
-      "错误：" +
+      "Bundle 错误：" +
       (error.message || error);
 
 
@@ -270,10 +315,14 @@ async function startTest(){
 
 
   /*
-  ================================================
-  ② WASM
-  ================================================
+  ==================================================
+  TEST ②
+  WASM
+  ==================================================
   */
+
+  let visionFiles;
+
 
   try{
 
@@ -283,7 +332,7 @@ async function startTest(){
     );
 
 
-    const visionFiles =
+    visionFiles =
       await withTimeout(
 
         FilesetResolver.forVisionTasks(
@@ -298,7 +347,7 @@ async function startTest(){
     if(!visionFiles){
 
       throw new Error(
-        "WASM 初始化没有返回运行环境"
+        "WASM 没有返回运行环境"
       );
 
     }
@@ -311,14 +360,47 @@ async function startTest(){
 
 
     detailEl.textContent =
-      "WASM 已成功启动。继续加载 Pose Landmarker 模型…";
+      "② WASM 成功。现在加载 Pose Landmarker…";
 
 
-    /*
-    ================================================
-    ③ Pose Landmarker
-    ================================================
-    */
+  }catch(error){
+
+    setError(
+      wasmEl,
+      "WASM 运行环境：连接失败"
+    );
+
+
+    setError(
+      modelEl,
+      "Pose Landmarker：尚未测试"
+    );
+
+
+    setError(
+      pointsEl,
+      "33 点检测系统：尚未建立"
+    );
+
+
+    detailEl.textContent =
+      "WASM 错误：" +
+      (error.message || error);
+
+
+    return;
+
+  }
+
+
+  /*
+  ==================================================
+  TEST ③
+  Pose Landmarker
+  ==================================================
+  */
+
+  try{
 
     setWait(
       modelEl,
@@ -382,18 +464,17 @@ async function startTest(){
 
 
     /*
-    ================================================
-    ④ 检测点系统
-    ================================================
+    ==================================================
+    TEST ④
+    33 点检测系统
+    ==================================================
+
+    Pose Landmarker 成功创建，
+    说明真正的 Pose 检测系统已经建立。
+
+    标准 Pose Landmarker 返回 33 个 landmarks。
     */
 
-    /*
-      Pose Landmarker 模型正常创建，
-      说明真正的 Pose 检测系统已经建立。
-
-      MediaPipe Pose Landmarker 标准姿态模型
-      返回 33 个姿态 landmarks。
-    */
 
     setOK(
       pointsEl,
@@ -402,60 +483,61 @@ async function startTest(){
 
 
     detailEl.innerHTML =
-      "<b>🎉 基础连接测试通过</b><br><br>" +
 
-      "MediaPipe Bundle：OK<br>" +
+      "<b>🎉 基础连接测试通过</b>" +
 
-      "WASM：OK<br>" +
+      "<br><br>" +
 
-      "Pose Landmarker：OK<br>" +
+      "MediaPipe Bundle：OK" +
 
-      "33 点检测系统：OK<br><br>" +
+      "<br>" +
 
-      "下一步才开始上传人物照片进行真实检测。";
+      "WASM：OK" +
+
+      "<br>" +
+
+      "Pose Landmarker：OK" +
+
+      "<br>" +
+
+      "33 点检测系统：OK" +
+
+      "<br><br>" +
+
+      "下一步再接人物照片检测。";
 
 
   }catch(error){
 
     setError(
-      wasmEl,
-      "WASM / 运行环境：失败"
+      modelEl,
+      "Pose Landmarker 模型：加载失败"
     );
 
 
-    if(
-      modelEl.className.includes("wait")
-    ){
-
-      setError(
-        modelEl,
-        "Pose Landmarker：尚未完成"
-      );
-
-    }
-
-
-    if(
-      pointsEl.className.includes("wait")
-    ){
-
-      setError(
-        pointsEl,
-        "33 点检测系统：尚未建立"
-      );
-
-    }
+    setError(
+      pointsEl,
+      "33 点检测系统：尚未建立"
+    );
 
 
     detailEl.textContent =
-      "错误：" +
+      "Pose 模型错误：" +
       (error.message || error);
 
+
+    return;
 
   }
 
 }
 
+
+/*
+==================================================
+开始
+==================================================
+*/
 
 startTest();
 
