@@ -3,41 +3,54 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AI人物自动骨架标注 V1.1</title>
+
+<title>AI人物自动骨架标注 V1.2</title>
 
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   margin:0;
   background:#f5f6f8;
   color:#202124;
+  font-family:-apple-system,BlinkMacSystemFont,
+  "Segoe UI",sans-serif;
 }
+
 .wrap{
   max-width:900px;
   margin:auto;
   padding:18px;
 }
+
 .card{
   background:#fff;
   border-radius:16px;
   padding:16px;
   margin:12px 0;
-  box-shadow:0 2px 10px #00000010;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
 }
+
 h1{
   font-size:24px;
   margin:8px 0 6px;
 }
+
 .sub{
   color:#666;
   margin-bottom:16px;
 }
+
 .row{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
 }
-button,label{
+
+button,
+label{
   display:inline-block;
   padding:11px 15px;
   border-radius:10px;
@@ -45,527 +58,27 @@ button,label{
   background:#fff;
   font-size:16px;
 }
+
 button{
   cursor:pointer;
 }
+
 .primary{
   background:#222;
   color:#fff;
   border-color:#222;
 }
+
 button:disabled{
   opacity:.45;
   cursor:not-allowed;
 }
+
 #status{
-  margin-top:10px;
-  color:#555;
+  margin-top:12px;
   min-height:24px;
   line-height:1.5;
-}
-#stage{
-  position:relative;
-  display:none;
-  max-width:100%;
-  overflow:hidden;
-  border-radius:12px;
-  background:#111;
-}
-#photo{
-  display:block;
-  max-width:100%;
-  height:auto;
-}
-#overlay{
-  position:absolute;
-  left:0;
-  top:0;
-  width:100%;
-  height:100%;
-  pointer-events:none;
-}
-.note{
-  font-size:13px;
-  color:#666;
-  line-height:1.5;
-}
-input{
-  display:none;
-}
-</style>
-</head>
-
-<body>
-
-<div class="wrap">
-
-  <div class="card">
-
-    <h1>AI人物自动骨架标注 V1.1</h1>
-
-    <div class="sub">
-      单人照片 · Google MediaPipe Pose Landmarker
-    </div>
-
-    <div class="row">
-
-      <label class="primary" for="file">
-        选择人物照片
-      </label>
-
-      <button id="toggle" type="button" disabled>
-        隐藏骨架
-      </button>
-
-    </div>
-
-    <input id="file" type="file" accept="image/*">
-
-    <div id="status">
-      正在初始化…
-    </div>
-
-  </div>
-
-
-  <div class="card">
-
-    <div id="stage">
-
-      <img id="photo" alt="人物照片">
-
-      <canvas id="overlay"></canvas>
-
-    </div>
-
-  </div>
-
-
-  <div class="card note">
-
-    V1.1 只做真实 Pose Landmarker 自动检测与骨架叠加。
-    没有检测到人物时不显示假骨架。
-    模型关键点是姿态检测点，不等同于严格解剖学骨点。
-
-  </div>
-
-</div>
-
-
-<script>
-
-const BUNDLE =
-"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm";
-
-const WASM =
-"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm";
-
-const MODEL =
-"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
-
-
-const statusEl =
-document.getElementById("status");
-
-const fileInput =
-document.getElementById("file");
-
-const photo =
-document.getElementById("photo");
-
-const canvas =
-document.getElementById("overlay");
-
-const stage =
-document.getElementById("stage");
-
-const toggle =
-document.getElementById("toggle");
-
-const ctx =
-canvas.getContext("2d");
-
-
-let PoseLandmarker;
-let FilesetResolver;
-let DrawingUtils;
-
-let landmarker = null;
-let results = null;
-
-let showSkeleton = true;
-
-
-function status(text){
-
-  statusEl.textContent = text;
-
+  color:#555;
 }
 
-
-function timeout(ms){
-
-  return new Promise(function(_,reject){
-
-    setTimeout(function(){
-
-      reject(new Error("连接超时"));
-
-    },ms);
-
-  });
-
-}
-
-
-async function withTimeout(promise,ms){
-
-  return Promise.race([
-    promise,
-    timeout(ms)
-  ]);
-
-}
-
-
-async function init(){
-
-  try{
-
-    status("正在连接 MediaPipe…");
-
-
-    const vision =
-      await withTimeout(
-        import(BUNDLE),
-        20000
-      );
-
-
-    ({
-      PoseLandmarker,
-      FilesetResolver,
-      DrawingUtils
-    } = vision);
-
-
-    status("正在加载视觉运行组件…");
-
-
-    const fileset =
-      await withTimeout(
-        FilesetResolver.forVisionTasks(WASM),
-        20000
-      );
-
-
-    status("正在加载姿态模型…");
-
-
-    landmarker =
-      await withTimeout(
-
-        PoseLandmarker.createFromOptions(
-          fileset,
-          {
-
-            baseOptions:{
-              modelAssetPath:MODEL
-            },
-
-            runningMode:"IMAGE",
-
-            numPoses:1,
-
-            minPoseDetectionConfidence:0.5,
-
-            minPosePresenceConfidence:0.5,
-
-            minTrackingConfidence:0.5
-
-          }
-        ),
-
-        30000
-
-      );
-
-
-    status(
-      "MediaPipe 已就绪，请上传人物照片。"
-    );
-
-
-  }catch(error){
-
-    console.error(error);
-
-    status(
-      "MediaPipe 加载失败：" +
-      (error?.message || error) +
-      "。请刷新页面或检查网络。"
-    );
-
-  }
-
-}
-
-
-function resizeCanvas(){
-
-  if(!photo.naturalWidth){
-
-    return;
-
-  }
-
-
-  canvas.width =
-    photo.naturalWidth;
-
-  canvas.height =
-    photo.naturalHeight;
-
-
-  const rect =
-    photo.getBoundingClientRect();
-
-
-  canvas.style.width =
-    rect.width + "px";
-
-  canvas.style.height =
-    rect.height + "px";
-
-}
-
-
-function draw(){
-
-  ctx.clearRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-
-
-  if(
-    !results?.landmarks?.length ||
-    !showSkeleton
-  ){
-
-    return;
-
-  }
-
-
-  const drawer =
-    new DrawingUtils(ctx);
-
-
-  for(
-    const landmarks of results.landmarks
-  ){
-
-    drawer.drawConnectors(
-      landmarks,
-      PoseLandmarker.POSE_CONNECTIONS,
-      {
-        lineWidth:4
-      }
-    );
-
-
-    drawer.drawLandmarks(
-      landmarks,
-      {
-        radius:4,
-        lineWidth:2
-      }
-    );
-
-  }
-
-}
-
-
-photo.onload = function(){
-
-  resizeCanvas();
-
-  draw();
-
-};
-
-
-fileInput.addEventListener(
-  "change",
-  async function(){
-
-    const file =
-      fileInput.files?.[0];
-
-
-    if(!file){
-
-      return;
-
-    }
-
-
-    if(!landmarker){
-
-      status(
-        "MediaPipe 尚未就绪，请等页面显示“MediaPipe 已就绪”。"
-      );
-
-      return;
-
-    }
-
-
-    results = null;
-
-    toggle.disabled = true;
-
-    stage.style.display = "block";
-
-
-    status(
-      "正在读取人物照片…"
-    );
-
-
-    const url =
-      URL.createObjectURL(file);
-
-
-    photo.src = url;
-
-
-    await new Promise(function(resolve){
-
-      if(photo.complete){
-
-        resolve();
-
-      }else{
-
-        photo.addEventListener(
-          "load",
-          resolve,
-          {once:true}
-        );
-
-      }
-
-    });
-
-
-    try{
-
-      resizeCanvas();
-
-
-      status(
-        "正在检测人物…"
-      );
-
-
-      results =
-        landmarker.detect(photo);
-
-
-      if(
-        results?.landmarks?.length
-      ){
-
-        showSkeleton = true;
-
-        toggle.disabled = false;
-
-        toggle.textContent =
-          "隐藏骨架";
-
-
-        status(
-          "检测成功：已显示真实 MediaPipe 骨架。"
-        );
-
-
-      }else{
-
-        status(
-          "未检测到人物，没有显示假骨架。"
-        );
-
-      }
-
-
-      draw();
-
-
-    }catch(error){
-
-      results = null;
-
-      draw();
-
-
-      status(
-        "检测失败：" +
-        (error?.message || error)
-      );
-
-
-      console.error(error);
-
-    }
-
-  }
-);
-
-
-toggle.addEventListener(
-  "click",
-  function(){
-
-    showSkeleton =
-      !showSkeleton;
-
-
-    toggle.textContent =
-      showSkeleton
-      ? "隐藏骨架"
-      : "显示骨架";
-
-
-    draw();
-
-  }
-);
-
-
-window.addEventListener(
-  "resize",
-  function(){
-
-    if(photo.naturalWidth){
-
-      resizeCanvas();
-
-      draw();
-
-    }
-
-  }
-);
-
-
-init();
-
-</script>
-
-</body>
-</html>
+#stage
