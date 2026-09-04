@@ -3,179 +3,61 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-
-<title>人体 X 光解剖骨架 V1.6</title>
+<title>人体 X 光解剖骨架 V1.7</title>
 
 <style>
 *{box-sizing:border-box}
-
 body{
-  margin:0;
-  background:#101010;
-  color:#eee;
-  font-family:-apple-system,BlinkMacSystemFont,
-  "PingFang SC","Segoe UI",sans-serif;
+  margin:0;background:#101010;color:#eee;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif
 }
-
 header{
-  position:sticky;
-  top:0;
-  z-index:20;
-  background:#171717;
-  border-bottom:1px solid #333;
-  padding:11px 12px;
+  position:sticky;top:0;z-index:20;background:#171717;
+  border-bottom:1px solid #333;padding:11px 12px
 }
-
-h1{
-  font-size:18px;
-  margin:0 0 4px;
-}
-
-.sub{
-  font-size:11px;
-  color:#aaa;
-  line-height:1.45;
-}
-
-.toolbar{
-  display:flex;
-  gap:6px;
-  flex-wrap:wrap;
-  margin-top:9px;
-}
-
+h1{font-size:18px;margin:0 0 4px}
+.sub{font-size:11px;color:#aaa;line-height:1.45}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
 button,.file{
-  border:1px solid #555;
-  background:#292929;
-  color:#eee;
-  border-radius:9px;
-  padding:8px 10px;
-  font-size:12px;
+  border:1px solid #555;background:#292929;color:#eee;
+  border-radius:9px;padding:8px 10px;font-size:12px
 }
-
-button:disabled{
-  opacity:.4;
-}
-
-.file input{
-  display:none;
-}
+button:disabled{opacity:.4}
+.file input{display:none}
 
 main{
   display:grid;
   grid-template-columns:minmax(0,1fr) 320px;
-  gap:10px;
-  padding:10px;
-  max-width:1500px;
-  margin:auto;
+  gap:10px;padding:10px;max-width:1500px;margin:auto
 }
-
 .viewer{
-  background:#050505;
-  border:1px solid #333;
-  border-radius:12px;
-  overflow:auto;
-  min-height:62vh;
-  padding:10px;
-  display:flex;
-  align-items:flex-start;
-  justify-content:center;
+  background:#050505;border:1px solid #333;border-radius:12px;
+  overflow:auto;min-height:62vh;padding:10px;
+  display:flex;align-items:flex-start;justify-content:center
 }
-
-#empty{
-  margin:auto;
-  color:#888;
-  text-align:center;
-  line-height:1.8;
-}
-
-#stage{
-  position:relative;
-  display:none;
-  line-height:0;
-  margin:auto;
-}
-
-#img{
-  display:block;
-  max-width:100%;
-  height:auto;
-}
-
-#overlay{
-  position:absolute;
-  left:0;
-  top:0;
-  pointer-events:none;
-}
+#empty{margin:auto;color:#888;text-align:center;line-height:1.8}
+#stage{position:relative;display:none;line-height:0;margin:auto}
+#img{display:block;max-width:100%;height:auto}
+#overlay{position:absolute;left:0;top:0;pointer-events:none}
 
 .panel{
-  background:#191919;
-  border:1px solid #333;
-  border-radius:12px;
-  padding:11px;
+  background:#191919;border:1px solid #333;border-radius:12px;padding:11px
 }
-
-.panel h2{
-  font-size:14px;
-  margin:0 0 8px;
-}
-
+.panel h2{font-size:14px;margin:0 0 8px}
 .note{
-  background:#222;
-  border-radius:9px;
-  padding:9px;
-  font-size:11px;
-  line-height:1.55;
-  margin:8px 0;
+  background:#222;border-radius:9px;padding:9px;
+  font-size:11px;line-height:1.55;margin:8px 0
 }
-
-.row{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin:8px 0;
-  font-size:12px;
-}
-
-.row input[type=range]{
-  flex:1;
-}
-
-#status{
-  white-space:pre-wrap;
-  font-size:11px;
-  line-height:1.55;
-  color:#bbb;
-}
-
-.ok{
-  color:#91db9a;
-}
-
-.bad{
-  color:#ff8585;
-}
-
-.legend{
-  font-size:10px;
-  color:#999;
-  line-height:1.55;
-}
+.row{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:12px}
+.row input[type=range]{flex:1}
+#status{white-space:pre-wrap;font-size:11px;line-height:1.55;color:#bbb}
+.ok{color:#91db9a}.bad{color:#ff8585}
+.legend{font-size:10px;color:#999;line-height:1.55}
 
 @media(max-width:900px){
-
-  main{
-    grid-template-columns:1fr;
-  }
-
-  .panel{
-    order:2;
-  }
-
-  .viewer{
-    min-height:48vh;
-  }
+  main{grid-template-columns:1fr}
+  .panel{order:2}
+  .viewer{min-height:48vh}
 }
 </style>
 </head>
@@ -184,10 +66,10 @@ main{
 
 <header>
 
-<h1>人体 X 光解剖骨架 V1.6</h1>
+<h1>人体 X 光解剖骨架 V1.7</h1>
 
 <div class="sub">
-33点姿态驱动 · 胸廓升级 · 骨盆结构升级 · 耻骨参考
+姿态检测 → 关节骨架 → 胸廓 → 脊柱 → 骨盆 → 耻骨参考
 </div>
 
 <div class="toolbar">
@@ -197,28 +79,13 @@ main{
 <input id="file" type="file" accept="image/*">
 </label>
 
-<button id="detect" disabled>
-开始检测
-</button>
-
-<button id="original" disabled>
-原图
-</button>
-
-<button id="xr" disabled>
-X 光
-</button>
-
-<button id="boneOnly" disabled>
-仅骨架
-</button>
-
-<button id="points" disabled>
-检测点
-</button>
+<button id="detect" disabled>开始检测</button>
+<button id="original" disabled>原图</button>
+<button id="xr" disabled>X 光</button>
+<button id="boneOnly" disabled>仅骨架</button>
+<button id="points" disabled>检测点</button>
 
 </div>
-
 </header>
 
 
@@ -243,7 +110,7 @@ X 光
 
 <aside class="panel">
 
-<h2>V1.6 骨架检测</h2>
+<h2>V1.7 骨架检测</h2>
 
 <div id="status">
 等待图片。
@@ -251,34 +118,26 @@ X 光
 
 <div class="note">
 
-<b>本版核心</b><br>
+<b>本版重点</b><br>
 
-① 四肢严格跟随 MediaPipe 姿态点。<br>
-② 胸廓根据肩宽、髋宽、躯干方向生成。<br>
-③ 脊柱沿人体中轴显示。<br>
-④ 骨盆改为左右髂骨 + 骨盆环结构。<br>
-⑤ 增加耻骨联合参考区域。<br>
-⑥ 不使用固定人体图片覆盖。<br>
-⑦ 不进行比例评分。
+① 四肢完全由真实检测点驱动。<br>
+② 胸廓不再使用单一椭圆。<br>
+③ 肋骨沿胸廓逐层收缩。<br>
+④ 脊柱独立显示。<br>
+⑤ 骨盆使用左右髂骨、骨盆环和耻骨参考。<br>
+⑥ 不改变原始人物图。<br>
+⑦ 暂不进行比例评分。
 
 </div>
 
 <div class="row">
 <label>人物透明度</label>
-<input id="photoOpacity"
-type="range"
-min="10"
-max="100"
-value="55">
+<input id="photoOpacity" type="range" min="10" max="100" value="55">
 </div>
 
 <div class="row">
 <label>骨架强度</label>
-<input id="boneOpacity"
-type="range"
-min="20"
-max="100"
-value="90">
+<input id="boneOpacity" type="range" min="20" max="100" value="90">
 </div>
 
 <div class="legend">
@@ -286,11 +145,11 @@ value="90">
 红点：高可信检测点<br>
 黄点：较低可信检测点<br><br>
 
-白色结构：主要骨骼结构<br>
-青色结构：解剖参考结构<br><br>
+白色：主要骨骼<br>
+青色：解剖结构参考<br><br>
 
-耻骨区域为姿态数据推导参考，
-不是 MediaPipe 原生检测点。
+注意：胸廓、骨盆、耻骨等结构是根据姿态点推导，
+不是从普通照片中直接检测出的医学骨骼。
 
 </div>
 
@@ -313,87 +172,68 @@ const status=$("status");
 
 let W=0;
 let H=0;
-
 let landmarks=null;
 let detector=null;
-
 let showPoints=false;
 let displayMode="xr";
 
 
 /* =========================================================
-   基础
+   基础数学
 ========================================================= */
 
 function P(i){
-
   return landmarks?.[i]||null;
-
 }
 
-
 function mid(a,b){
-
   return{
     x:(a.x+b.x)/2,
     y:(a.y+b.y)/2
   };
-
 }
-
 
 function dist(a,b){
-
-  return Math.hypot(
-    a.x-b.x,
-    a.y-b.y
-  );
-
+  return Math.hypot(a.x-b.x,a.y-b.y);
 }
-
 
 function unit(a,b){
 
   const dx=b.x-a.x;
   const dy=b.y-a.y;
-
   const d=Math.hypot(dx,dy)||1;
 
   return{
     x:dx/d,
     y:dy/d
   };
-
 }
 
-
 function perp(v){
-
   return{
     x:-v.y,
     y:v.x
   };
-
 }
 
+function add(a,v,s){
+  return{
+    x:a.x+v.x*s,
+    y:a.y+v.y*s
+  };
+}
 
 function lerp(a,b,t){
-
   return{
     x:a.x+(b.x-a.x)*t,
     y:a.y+(b.y-a.y)*t
   };
-
 }
-
 
 function setStatus(text,cls=""){
-
   status.className=cls;
   status.textContent=text;
-
 }
-
 
 function enableButtons(v){
 
@@ -410,17 +250,16 @@ function enableButtons(v){
 
 
 /* =========================================================
-   绘图基础
+   绘图
 ========================================================= */
 
-function line(a,b,width,color){
+function line(a,b,w,color){
 
   ctx.beginPath();
-
   ctx.moveTo(a.x,a.y);
   ctx.lineTo(b.x,b.y);
 
-  ctx.lineWidth=width;
+  ctx.lineWidth=w;
   ctx.strokeStyle=color;
   ctx.stroke();
 
@@ -454,12 +293,7 @@ function circle(p,r,fill,stroke=""){
 
 
 function ellipse(
-  p,
-  rx,
-  ry,
-  rotation,
-  fill,
-  stroke=""
+  p,rx,ry,rotation,fill,stroke=""
 ){
 
   ctx.beginPath();
@@ -488,13 +322,7 @@ function ellipse(
 }
 
 
-function capsule(
-  a,
-  b,
-  r1,
-  r2,
-  fill
-){
+function capsule(a,b,r1,r2,fill){
 
   const u=unit(a,b);
   const n=perp(u);
@@ -530,14 +358,7 @@ function capsule(
 
 
 function arc(
-  p,
-  rx,
-  ry,
-  rotation,
-  start,
-  end,
-  width,
-  color
+  p,rx,ry,rotation,start,end,width,color
 ){
 
   ctx.beginPath();
@@ -561,7 +382,7 @@ function arc(
 
 
 /* =========================================================
-   V1.6 解剖骨架
+   V1.7 人体解剖结构
 ========================================================= */
 
 function drawSkeleton(){
@@ -595,15 +416,11 @@ function drawSkeleton(){
 
   const nose=P(0);
 
-  if(!ls||!rs||!lh||!rh){
-
-    return;
-
-  }
+  if(!ls||!rs||!lh||!rh)return;
 
 
   /* =======================================================
-     身体几何基准
+     人体基础轴线
   ======================================================= */
 
   const S=mid(ls,rs);
@@ -618,16 +435,16 @@ function drawSkeleton(){
   const torsoLength=
     dist(S,G);
 
-  const axis=
+  const bodyAxis=
     unit(S,G);
 
-  const normal=
-    perp(axis);
+  const sideAxis=
+    perp(bodyAxis);
 
   const rotation=
     Math.atan2(
-      axis.y,
-      axis.x
+      bodyAxis.y,
+      bodyAxis.x
     );
 
 
@@ -638,10 +455,10 @@ function drawSkeleton(){
     "rgba(190,248,255,.96)";
 
   const detail=
-    "rgba(100,225,245,.72)";
+    "rgba(105,225,245,.72)";
 
   const soft=
-    "rgba(190,248,255,.14)";
+    "rgba(180,245,255,.055)";
 
 
   ctx.save();
@@ -658,29 +475,21 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     头骨
+     1. 头骨
   ======================================================= */
 
   let headCenter;
-  let headRotation=0;
 
   if(earL&&earR){
 
-    headCenter=
-      mid(earL,earR);
-
-    headRotation=
-      Math.atan2(
-        earR.y-earL.y,
-        earR.x-earL.x
-      );
+    headCenter=mid(earL,earR);
 
   }
   else if(nose){
 
     headCenter={
       x:nose.x,
-      y:nose.y-shoulderWidth*.16
+      y:nose.y-shoulderWidth*.15
     };
 
   }
@@ -702,55 +511,35 @@ function drawSkeleton(){
 
   ellipse(
     headCenter,
-    Math.max(
-      headWidth*.76,
-      shoulderWidth*.08
-    ),
-    Math.max(
-      headWidth*.98,
-      shoulderWidth*.105
-    ),
-    headRotation,
+    headWidth*.78,
+    headWidth*.98,
+    earL&&earR
+      ? Math.atan2(
+          earR.y-earL.y,
+          earR.x-earL.x
+        )
+      : 0,
     soft,
     bright
   );
 
 
-  /* 颅骨内部 */
-
-  ellipse(
-    headCenter,
-    Math.max(
-      headWidth*.38,
-      shoulderWidth*.04
-    ),
-    Math.max(
-      headWidth*.57,
-      shoulderWidth*.06
-    ),
-    headRotation,
-    "rgba(180,245,255,.045)",
-    detail
-  );
-
-
   if(nose){
 
-    line(
-      headCenter,
+    circle(
       nose,
       Math.max(
-        1.5,
-        shoulderWidth*.010
+        2,
+        shoulderWidth*.014
       ),
-      detail
+      "rgba(235,255,255,.75)"
     );
 
   }
 
 
   /* =======================================================
-     锁骨
+     2. 锁骨
   ======================================================= */
 
   line(
@@ -775,60 +564,109 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     胸廓
+     3. 胸廓上缘
   ======================================================= */
 
-  const ribTop=
+  const upperChest=
     lerp(
       S,
       G,
-      .16
-    );
-
-  const ribBottom=
-    lerp(
-      S,
-      G,
-      .61
-    );
-
-  const ribCenter=
-    lerp(
-      ribTop,
-      ribBottom,
-      .50
+      .17
     );
 
 
-  const ribWidth=
+  const chestWidth=
     shoulderWidth*.43;
 
-  const ribHeight=
-    torsoLength*.25;
+
+  /*
+     胸廓不是一个圆。
+     这里建立左右边界，
+     让胸廓向下逐渐收窄。
+  */
+
+  const chestLeft=[];
+  const chestRight=[];
 
 
-  /* 胸廓整体轮廓 */
+  for(let i=0;i<=6;i++){
 
-  ellipse(
-    ribCenter,
-    ribWidth,
-    ribHeight,
-    rotation,
-    "rgba(120,230,250,.025)",
-    detail
-  );
+    const t=.12+i*.075;
+
+    const center=
+      lerp(
+        S,
+        G,
+        t
+      );
+
+
+    const width=
+      shoulderWidth*
+      (
+        .46 -
+        i*.025
+      );
+
+
+    chestLeft.push(
+      add(
+        center,
+        sideAxis,
+        -width
+      )
+    );
+
+
+    chestRight.push(
+      add(
+        center,
+        sideAxis,
+        width
+      )
+    );
+
+  }
+
+
+  /* 胸廓左右轮廓 */
+
+  for(let i=0;i<chestLeft.length-1;i++){
+
+    line(
+      chestLeft[i],
+      chestLeft[i+1],
+      Math.max(
+        1.4,
+        shoulderWidth*.009
+      ),
+      detail
+    );
+
+    line(
+      chestRight[i],
+      chestRight[i+1],
+      Math.max(
+        1.4,
+        shoulderWidth*.009
+      ),
+      detail
+    );
+
+  }
 
 
   /* =======================================================
-     肋骨
+     4. 肋骨
   ======================================================= */
 
   for(let i=0;i<8;i++){
 
     const t=
-      .17+i*.062;
+      .18+i*.058;
 
-    const c=
+
+    const center=
       lerp(
         S,
         G,
@@ -840,48 +678,86 @@ function drawSkeleton(){
       shoulderWidth*
       (
         .40 -
-        i*.027
+        i*.025
       );
 
 
     const height=
       torsoLength*
-      .035;
+      .030;
 
 
-    arc(
-      c,
-      width,
-      height,
-      rotation,
-      Math.PI*.08,
-      Math.PI*.92,
-      Math.max(
-        1.2,
-        shoulderWidth*.008
-      ),
-      detail
+    /*
+       左右分别画肋弓，
+       中央向胸骨收拢。
+    */
+
+    const leftStart=
+      add(
+        center,
+        sideAxis,
+        -width
+      );
+
+    const rightStart=
+      add(
+        center,
+        sideAxis,
+        width
+      );
+
+
+    const sternumPoint=
+      lerp(
+        S,
+        G,
+        t
+      );
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      leftStart.x,
+      leftStart.y
     );
+
+    ctx.quadraticCurveTo(
+      sternumPoint.x,
+      sternumPoint.y-height,
+      rightStart.x,
+      rightStart.y
+    );
+
+    ctx.lineWidth=
+      Math.max(
+        1.3,
+        shoulderWidth*.008
+      );
+
+    ctx.strokeStyle=detail;
+
+    ctx.stroke();
 
   }
 
 
   /* =======================================================
-     胸骨
+     5. 胸骨
   ======================================================= */
 
   const sternumTop=
     lerp(
       S,
       G,
-      .10
+      .11
     );
 
   const sternumBottom=
     lerp(
       S,
       G,
-      .61
+      .62
     );
 
 
@@ -895,19 +771,23 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     脊柱
+     6. 脊柱
   ======================================================= */
 
   const spine=[];
 
 
-  for(let i=0;i<=12;i++){
+  for(let i=0;i<=13;i++){
+
+    const t=
+      .08+i*.068;
+
 
     spine.push(
       lerp(
         S,
         G,
-        .08+i*.073
+        t
       )
     );
 
@@ -926,7 +806,7 @@ function drawSkeleton(){
       ),
 
       Math.max(
-        1.0,
+        1,
         shoulderWidth*.010
       ),
 
@@ -937,7 +817,7 @@ function drawSkeleton(){
     circle(
       spine[i],
       Math.max(
-        1.4,
+        1.3,
         shoulderWidth*.015
       ),
       "rgba(245,255,255,.58)"
@@ -947,69 +827,54 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     骨盆
+     7. 骨盆
   ======================================================= */
 
+  const pelvisCenter=
+    G;
+
+
   /*
-     左右髋点是实际检测点。
-     骨盆结构围绕它们建立。
+     左右髂骨翼
   */
 
-  const pelvisAxis=
-    unit(lh,rh);
-
-  const pelvisNormal=
-    perp(pelvisAxis);
-
-
-  const pelvisTopLeft={
-    x:lh.x+pelvisNormal.x*hipWidth*.12,
-    y:lh.y+pelvisNormal.y*hipWidth*.12
-  };
+  const leftIliacTop=
+    add(
+      lh,
+      bodyAxis,
+      -hipWidth*.13
+    );
 
 
-  const pelvisTopRight={
-    x:rh.x+pelvisNormal.x*hipWidth*.12,
-    y:rh.y+pelvisNormal.y*hipWidth*.12
-  };
+  const rightIliacTop=
+    add(
+      rh,
+      bodyAxis,
+      -hipWidth*.13
+    );
 
 
-  const pelvisLowerLeft={
-    x:lh.x-pelvisNormal.x*hipWidth*.20+
-       pelvisAxis.x*hipWidth*.06,
-
-    y:lh.y-pelvisNormal.y*hipWidth*.20+
-       pelvisAxis.y*hipWidth*.06
-  };
-
-
-  const pelvisLowerRight={
-    x:rh.x-pelvisNormal.x*hipWidth*.20-
-       pelvisAxis.x*hipWidth*.06,
-
-    y:rh.y-pelvisNormal.y*hipWidth*.20-
-       pelvisAxis.y*hipWidth*.06
-  };
+  const leftIliacBottom=
+    add(
+      lh,
+      bodyAxis,
+      hipWidth*.18
+    );
 
 
-  /* 骨盆上缘 */
-
-  line(
-    pelvisTopLeft,
-    pelvisTopRight,
-    Math.max(
-      2,
-      hipWidth*.017
-    ),
-    bright
-  );
+  const rightIliacBottom=
+    add(
+      rh,
+      bodyAxis,
+      hipWidth*.18
+    );
 
 
   /* 左髂骨 */
 
   line(
-    pelvisTopLeft,
-    pelvisLowerLeft,
+    leftIliacTop,
+    leftIliacBottom,
     Math.max(
       2,
       hipWidth*.017
@@ -1021,8 +886,8 @@ function drawSkeleton(){
   /* 右髂骨 */
 
   line(
-    pelvisTopRight,
-    pelvisLowerRight,
+    rightIliacTop,
+    rightIliacBottom,
     Math.max(
       2,
       hipWidth*.017
@@ -1031,64 +896,56 @@ function drawSkeleton(){
   );
 
 
-  /* 骨盆下弓 */
+  /* 骨盆上缘 */
+
+  line(
+    leftIliacTop,
+    rightIliacTop,
+    Math.max(
+      2,
+      hipWidth*.017
+    ),
+    bright
+  );
+
+
+  /* =======================================================
+     8. 骨盆环
+  ======================================================= */
+
+  const pelvisLower=
+    lerp(
+      pelvisCenter,
+      lerp(
+        leftIliacBottom,
+        rightIliacBottom,
+        .5
+      ),
+      .72
+    );
+
 
   arc(
-    mid(
-      pelvisLowerLeft,
-      pelvisLowerRight
-    ),
-
-    hipWidth*.47,
-
-    torsoLength*.095,
-
+    pelvisCenter,
+    hipWidth*.48,
+    torsoLength*.105,
     rotation,
-
     0,
-
     Math.PI,
-
     Math.max(
       1.7,
       hipWidth*.014
     ),
-
     detail
   );
 
 
   /* =======================================================
-     骨盆中心
-  ======================================================= */
-
-  const pelvisCenter=
-    mid(lh,rh);
-
-
-  circle(
-    pelvisCenter,
-    Math.max(
-      2.5,
-      hipWidth*.024
-    ),
-    "rgba(240,255,255,.65)"
-  );
-
-
-  /* =======================================================
-     耻骨参考区域
+     9. 耻骨参考
   ======================================================= */
 
   const pubic=
-    lerp(
-      pelvisCenter,
-      mid(
-        pelvisLowerLeft,
-        pelvisLowerRight
-      ),
-      .72
-    );
+    pelvisLower;
 
 
   circle(
@@ -1097,12 +954,12 @@ function drawSkeleton(){
       2.5,
       hipWidth*.025
     ),
-    "rgba(255,255,255,.90)"
+    "rgba(255,255,255,.92)"
   );
 
 
   line(
-    pelvisLowerLeft,
+    leftIliacBottom,
     pubic,
     Math.max(
       1.3,
@@ -1113,7 +970,7 @@ function drawSkeleton(){
 
 
   line(
-    pelvisLowerRight,
+    rightIliacBottom,
     pubic,
     Math.max(
       1.3,
@@ -1124,7 +981,7 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     左臂
+     10. 左臂
   ======================================================= */
 
   if(le&&lw){
@@ -1157,7 +1014,7 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     右臂
+     11. 右臂
   ======================================================= */
 
   if(re&&rw){
@@ -1190,7 +1047,7 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     左腿
+     12. 左腿
   ======================================================= */
 
   if(lk&&la){
@@ -1223,7 +1080,7 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     右腿
+     13. 右腿
   ======================================================= */
 
   if(rk&&ra){
@@ -1256,7 +1113,7 @@ function drawSkeleton(){
 
 
   /* =======================================================
-     左脚
+     14. 足部
   ======================================================= */
 
   if(lf&&lt){
@@ -1271,10 +1128,6 @@ function drawSkeleton(){
 
   }
 
-
-  /* =======================================================
-     右脚
-  ======================================================= */
 
   if(rf&&rt){
 
@@ -1315,8 +1168,8 @@ function drawPoints(){
         W*.0027
       ),
       (p.v??1)>=.7
-        ?"#ff4d5d"
-        :"#ffd35c"
+        ?"rgba(255,77,93,.95)"
+        :"rgba(255,211,92,.95)"
     );
 
   });
@@ -1333,7 +1186,6 @@ function drawPoints(){
 function draw(){
 
   if(!W)return;
-
 
   ctx.clearRect(
     0,
@@ -1400,14 +1252,13 @@ function resizeCanvas(){
 
 }
 
-
 new ResizeObserver(
   resizeCanvas
 ).observe(img);
 
 
 /* =========================================================
-   打开图片
+   图片
 ========================================================= */
 
 $("file").onchange=e=>{
@@ -1443,6 +1294,7 @@ $("file").onchange=e=>{
     displayMode="xr";
 
     img.style.opacity=1;
+
 
     ctx.clearRect(
       0,
@@ -1590,13 +1442,15 @@ async()=>{
     setStatus(
       `✅ 检测完成：1 人物 / 33 个姿态点
 
-V1.6 骨架已建立。
+V1.7 解剖骨架已建立。
 
-重点检查：
-肩 → 肘 → 腕
-髋 → 膝 → 踝
-胸廓 → 脊柱 → 骨盆
-以及骨盆中心 / 耻骨参考区域。`,
+请重点检查：
+① 肩、肘、腕
+② 髋、膝、踝
+③ 胸廓
+④ 脊柱
+⑤ 骨盆
+⑥ 耻骨参考位置`,
       "ok"
     );
 
@@ -1630,7 +1484,7 @@ V1.6 骨架已建立。
 
 
 /* =========================================================
-   按钮
+   控件
 ========================================================= */
 
 $("original").onclick=()=>{
